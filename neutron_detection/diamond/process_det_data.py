@@ -84,60 +84,60 @@ data = {
     },
 }
 
-for gen in data.keys():
+for gen, gen_data in data.items():
     print(gen)
-    for section in data[gen].keys():
+    for section, section_data in gen_data.items():
         # Create mask to only count pulses of any energy in section time window
         tot_time_mask = np.logical_and(
-            time_values > data[gen][section]["window"][0],
-            time_values < data[gen][section]["window"][1],
+            time_values > section_data["window"][0],
+            time_values < section_data["window"][1],
         )
 
         # Create mask to only count pulses from (n,alpha) peak in section time window
         peak_time_mask = np.logical_and(
-            peak_time_values > data[gen][section]["window"][0],
-            peak_time_values < data[gen][section]["window"][1],
+            peak_time_values > section_data["window"][0],
+            peak_time_values < section_data["window"][1],
         )
 
-        data[gen][section]["tot counts"] = len(time_values[tot_time_mask])
-        data[gen][section]["tot err"] = np.sqrt(len(time_values[tot_time_mask]))
-        data[gen][section]["tot count rate"] = data[gen][section][
-            "tot counts"
-        ] / np.diff(data[gen][section]["window"])
-        data[gen][section]["tot count rate err"] = data[gen][section][
-            "tot err"
-        ] / np.diff(data[gen][section]["window"])
+        section_data["tot counts"] = len(time_values[tot_time_mask])
+        section_data["tot err"] = np.sqrt(len(time_values[tot_time_mask]))
+        section_data["tot count rate"] = section_data["tot counts"] / np.diff(
+            section_data["window"]
+        )
+        section_data["tot count rate err"] = section_data["tot err"] / np.diff(
+            section_data["window"]
+        )
 
-        data[gen][section]["peak counts"] = len(peak_time_values[peak_time_mask])
-        data[gen][section]["peak err"] = np.sqrt(len(peak_time_values[peak_time_mask]))
-        data[gen][section]["peak count rate"] = data[gen][section][
-            "peak counts"
-        ] / np.diff(data[gen][section]["window"])
-        data[gen][section]["peak count rate err"] = data[gen][section][
-            "peak err"
-        ] / np.diff(data[gen][section]["window"])
+        section_data["peak counts"] = len(peak_time_values[peak_time_mask])
+        section_data["peak err"] = np.sqrt(len(peak_time_values[peak_time_mask]))
+        section_data["peak count rate"] = section_data["peak counts"] / np.diff(
+            section_data["window"]
+        )
+        section_data["peak count rate err"] = section_data["peak err"] / np.diff(
+            section_data["window"]
+        )
 
         print("\tSection: {}".format(section))
         print(
             "\t\tTotal Counts: {} +/- {}".format(
-                data[gen][section]["tot counts"], data[gen][section]["tot err"]
+                section_data["tot counts"], section_data["tot err"]
             )
         )
         print(
             "\t\tTotal Count Rate: {} +/- {}".format(
-                data[gen][section]["tot count rate"],
-                data[gen][section]["tot count rate err"],
+                section_data["tot count rate"],
+                section_data["tot count rate err"],
             )
         )
         print(
             "\t\tPeak Counts: {} +/- {}".format(
-                data[gen][section]["peak counts"], data[gen][section]["peak err"]
+                section_data["peak counts"], section_data["peak err"]
             )
         )
         print(
             "\t\tPeak Count Rate: {} +/- {}".format(
-                data[gen][section]["peak count rate"],
-                data[gen][section]["peak count rate err"],
+                section_data["peak count rate"],
+                section_data["peak count rate err"],
             )
         )
 
@@ -146,30 +146,30 @@ print(data["total"]["Day 1 Steady"]["window"])
 print(data["total"]["Day 1 Steady"]["window"][0])
 print(data["total"]["Day 1 Steady"]["tot count rate"])
 ## Plot relevant count rates in regions of interest
-for section in data["total"].keys():
+for section_data in data["total"].values():
     ax3.plot(
-        data["total"][section]["window"],
-        [data["total"][section]["tot count rate"][0]] * 2,
+        section_data["window"],
+        [section_data["tot count rate"][0]] * 2,
         "--k",
     )
     t = ax3.text(
-        np.mean(data["total"][section]["window"]),
-        data["total"][section]["tot count rate"] + 7,
-        "{:.0f} cps".format(data["total"][section]["tot count rate"][0]),
+        np.mean(section_data["window"]),
+        section_data["tot count rate"] + 7,
+        "{:.0f} cps".format(section_data["tot count rate"][0]),
         ha="center",
         c="white",
     )
     t.set_bbox(dict(facecolor="black", alpha=1.0, edgecolor=None))
 
     ax2.plot(
-        data["total"][section]["window"],
-        [data["total"][section]["peak count rate"][0]] * 2,
+        section_data["window"],
+        [section_data["peak count rate"][0]] * 2,
         "--k",
     )
     t2 = ax2.text(
-        np.mean(data["total"][section]["window"]),
-        data["total"][section]["peak count rate"] + 0.2,
-        "{:.1f} cps".format(data["total"][section]["peak count rate"][0]),
+        np.mean(section_data["window"]),
+        section_data["peak count rate"] + 0.2,
+        "{:.1f} cps".format(section_data["peak count rate"][0]),
         ha="center",
         c="white",
     )
