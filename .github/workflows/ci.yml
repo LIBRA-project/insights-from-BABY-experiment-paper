@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  diamond_detector:
 
     runs-on: ubuntu-latest
 
@@ -26,6 +26,21 @@ jobs:
       working-directory: ./neutron_detection/diamond
       run: |
         python process_det_data.py
+
+
+  openmc:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    # write a step to setup conda with environment.yml
+    - name: Setup conda
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        environment-file: environment.yml
+        activate-environment: baby-paper-env
 
     - name: run openmc
       shell: bash -l {0}
@@ -54,3 +69,10 @@ jobs:
         done
 
         echo "All files exist."
+    
+    - name: Run OpenMC post-processing
+      shell: bash -l {0}
+      working-directory: ./openmc_model
+      run: |
+        jupyter-nbconvert --to python postprocessing.ipynb
+        python postprocessing.py

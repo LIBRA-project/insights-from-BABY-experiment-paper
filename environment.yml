@@ -9,3 +9,4 @@ dependencies:
   - matplotlib # add version tag
   - pip:
     - openmc_data_downloader
+    - nbconvert
