@@ -166,7 +166,7 @@ print(
 
 fig1, ax1 = plt.subplots()
 ax1.hist(energy_values, bins=300, histtype="step")
-ax1.set_title("Combined Energy Spectrum")
+# ax1.set_title("Combined Energy Spectrum")
 ax1.set_xlabel("Energy Channel")
 ax1.set_ylabel("Counts")
 print(time_values)
@@ -177,16 +177,14 @@ all_count_rates = all_count_rates / bin_time
 
 fig2, ax2 = plt.subplots()
 ax2.stairs(peak_count_rates, edges=peak_count_rate_bins)
-ax2.set_title(r"(n,$\alpha$) Peak Count Rate")
-ax2.set_xlabel("Time [s]")
-ax2.set_ylabel("Count Rate [cps]")
+ax2.set_xlabel("Time (s)")
+ax2.set_ylabel(r"(n,$\alpha$) Count Rate (CPS)")
 
 
 fig3, ax3 = plt.subplots()
 ax3.stairs(all_count_rates, edges=all_count_rate_bins)
-ax3.set_title("Overall Count Rate")
-ax3.set_xlabel("Time [s]")
-ax3.set_ylabel("Count Rate [cps]")
+ax3.set_xlabel("Time (s)")
+ax3.set_ylabel("Total Count Rate (CPS)")
 
 ## Plot relevant count rates in regions of interest
 for section_data in data["total"].values():
@@ -230,7 +228,7 @@ for ax in [ax1, ax2, ax3]:
 
 for ext in ["pdf", "png", "svg"]:
     fig1.savefig("combined_energy_spectrum.{}".format(ext))
-    fig2.savefig("peak_count_rate.{}".format(ext))
+    fig2.savefig("n_alpha_peak_count_rate.{}".format(ext))
     fig3.savefig("overall_count_rate.{}".format(ext))
 
 plt.show()
