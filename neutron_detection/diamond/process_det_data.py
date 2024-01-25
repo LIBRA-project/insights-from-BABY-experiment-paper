@@ -31,33 +31,17 @@ for filename in os.listdir(data_directory):
 # print(energy_values)
 inds = np.argsort(time_values)
 time_values = np.array(time_values)[inds] / 1e12
+time_bins = np.arange(0, time_values[-2], bin_time)
 energy_values = np.array(energy_values)[inds]
 print(time_values[0])
 print(time_values[-1])
-
-fig1, ax1 = plt.subplots(figsize=[10, 8])
-ax1.hist(energy_values, bins=300, color="blue", alpha=1.0, histtype="step")
-ax1.set_title("Combined Energy Spectrum")
-ax1.set_xlabel("Energy Channel")
-ax1.set_ylabel("Counts")
-print(time_values)
-print(time_values.max())
-
-time_bins = np.arange(0, time_values[-2], bin_time)
-all_count_rates, all_count_rate_bins = np.histogram(time_values, bins=time_bins)
-all_count_rates = all_count_rates / bin_time
-
-fig3, ax3 = plt.subplots(figsize=[10, 8])
-ax3.stairs(all_count_rates, edges=all_count_rate_bins, color="blue", alpha=1.0)
-ax3.set_title("Overall Count Rate")
-ax3.set_xlabel("Time [s]")
-ax3.set_ylabel("Count Rate [cps]")
 
 peak_mask = (energy_values > 1180) & (energy_values < 1300)
 
 peak_time_values = time_values[peak_mask]
 print(peak_time_values.shape)
 peak_energy_values = energy_values[peak_mask]
+
 
 peak_count_rates, peak_count_rate_bins = np.histogram(peak_time_values, bins=time_bins)
 peak_count_rates = peak_count_rates / bin_time
@@ -144,39 +128,7 @@ for gen, gen_data in data.items():
 print(data["total"]["Day 1 Steady"]["window"])
 print(data["total"]["Day 1 Steady"]["window"][0])
 print(data["total"]["Day 1 Steady"]["tot count rate"])
-## Plot relevant count rates in regions of interest
-for section_data in data["total"].values():
-    ax3.hlines(
-        section_data["tot count rate"][0],
-        section_data["window"][0],
-        section_data["window"][1],
-        colors="k",
-        linestyles="--",
-    )
-    t = ax3.text(
-        np.mean(section_data["window"]),
-        section_data["tot count rate"] + 7,
-        "{:.0f} cps".format(section_data["tot count rate"][0]),
-        ha="center",
-        c="white",
-    )
-    t.set_bbox(dict(facecolor="black", alpha=1.0, edgecolor=None))
 
-    ax2.hlines(
-        section_data["peak count rate"][0],
-        section_data["window"][0],
-        section_data["window"][1],
-        colors="k",
-        linestyles="--",
-    )
-    t2 = ax2.text(
-        np.mean(section_data["window"]),
-        section_data["peak count rate"] + 0.2,
-        "{:.1f} cps".format(section_data["peak count rate"][0]),
-        ha="center",
-        c="white",
-    )
-    t2.set_bbox(dict(facecolor="black", alpha=1.0, edgecolor=None))
 
 data["A325"]["ave"] = {
     "peak count rate": (
@@ -216,5 +168,57 @@ print(
         data["P383"]["ave"]["peak count rate err"],
     )
 )
+
+
+fig1, ax1 = plt.subplots(figsize=[10, 8])
+ax1.hist(energy_values, bins=300, color="blue", alpha=1.0, histtype="step")
+ax1.set_title("Combined Energy Spectrum")
+ax1.set_xlabel("Energy Channel")
+ax1.set_ylabel("Counts")
+print(time_values)
+print(time_values.max())
+
+all_count_rates, all_count_rate_bins = np.histogram(time_values, bins=time_bins)
+all_count_rates = all_count_rates / bin_time
+
+fig3, ax3 = plt.subplots(figsize=[10, 8])
+ax3.stairs(all_count_rates, edges=all_count_rate_bins, color="blue", alpha=1.0)
+ax3.set_title("Overall Count Rate")
+ax3.set_xlabel("Time [s]")
+ax3.set_ylabel("Count Rate [cps]")
+
+## Plot relevant count rates in regions of interest
+for section_data in data["total"].values():
+    ax3.hlines(
+        section_data["tot count rate"][0],
+        section_data["window"][0],
+        section_data["window"][1],
+        colors="k",
+        linestyles="--",
+    )
+    t = ax3.text(
+        np.mean(section_data["window"]),
+        section_data["tot count rate"] + 7,
+        "{:.0f} cps".format(section_data["tot count rate"][0]),
+        ha="center",
+        c="white",
+    )
+    t.set_bbox(dict(facecolor="black", alpha=1.0, edgecolor=None))
+
+    ax2.hlines(
+        section_data["peak count rate"][0],
+        section_data["window"][0],
+        section_data["window"][1],
+        colors="k",
+        linestyles="--",
+    )
+    t2 = ax2.text(
+        np.mean(section_data["window"]),
+        section_data["peak count rate"] + 0.2,
+        "{:.1f} cps".format(section_data["peak count rate"][0]),
+        ha="center",
+        c="white",
+    )
+    t2.set_bbox(dict(facecolor="black", alpha=1.0, edgecolor=None))
 
 plt.show()
