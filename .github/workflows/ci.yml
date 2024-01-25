@@ -26,3 +26,31 @@ jobs:
       working-directory: ./neutron_detection/diamond
       run: |
         python process_det_data.py
+
+    - name: run openmc
+      shell: bash -l {0}
+      working-directory: ./openmc_model
+      run: |
+        python -c "from openmc_model import main; main(nb_batches=2)"
+
+    - name: check files exist
+      shell: bash -l {0}
+      working-directory: ./openmc_model
+      run: |
+        # Array of filenames to check
+        file_names=("statepoint_pbli.2.h5" "statepoint_flibe.2.h5" "statepoint_flinak.2.h5" "statepoint_cllif.2.h5")
+
+        # Function to check if a file exists
+        check_file_exists() {
+          if [ ! -e "$1" ]; then
+            echo "Error: File '$1' not found."
+            exit 1
+          fi
+        }
+
+        # Loop over each filename
+        for file in "${file_names[@]}"; do
+          check_file_exists "$file"
+        done
+
+        echo "All files exist."
