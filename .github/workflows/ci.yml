@@ -22,7 +22,7 @@ jobs:
         activate-environment: baby-paper-env
 
     - name: Run process_det_data.py
-      shell: bash
+      shell: bash -l {0}
       working-directory: ./neutron_detection/diamond
       run: |
         python process_det_data.py
