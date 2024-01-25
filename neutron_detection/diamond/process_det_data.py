@@ -46,12 +46,6 @@ peak_energy_values = energy_values[peak_mask]
 peak_count_rates, peak_count_rate_bins = np.histogram(peak_time_values, bins=time_bins)
 peak_count_rates = peak_count_rates / bin_time
 
-fig2, ax2 = plt.subplots(figsize=[10, 8])
-ax2.stairs(peak_count_rates, edges=peak_count_rate_bins, color="blue", alpha=1.0)
-ax2.set_title("(n,alpha) Peak Count Rate")
-ax2.set_xlabel("Time [s]")
-ax2.set_ylabel("Count Rate [cps]")
-
 
 ### Calculate average neutron rate for each generator
 data = {
@@ -170,8 +164,8 @@ print(
 )
 
 
-fig1, ax1 = plt.subplots(figsize=[10, 8])
-ax1.hist(energy_values, bins=300, color="blue", alpha=1.0, histtype="step")
+fig1, ax1 = plt.subplots()
+ax1.hist(energy_values, bins=300, histtype="step")
 ax1.set_title("Combined Energy Spectrum")
 ax1.set_xlabel("Energy Channel")
 ax1.set_ylabel("Counts")
@@ -181,8 +175,15 @@ print(time_values.max())
 all_count_rates, all_count_rate_bins = np.histogram(time_values, bins=time_bins)
 all_count_rates = all_count_rates / bin_time
 
-fig3, ax3 = plt.subplots(figsize=[10, 8])
-ax3.stairs(all_count_rates, edges=all_count_rate_bins, color="blue", alpha=1.0)
+fig2, ax2 = plt.subplots()
+ax2.stairs(peak_count_rates, edges=peak_count_rate_bins)
+ax2.set_title(r"(n,$\alpha$) Peak Count Rate")
+ax2.set_xlabel("Time [s]")
+ax2.set_ylabel("Count Rate [cps]")
+
+
+fig3, ax3 = plt.subplots()
+ax3.stairs(all_count_rates, edges=all_count_rate_bins)
 ax3.set_title("Overall Count Rate")
 ax3.set_xlabel("Time [s]")
 ax3.set_ylabel("Count Rate [cps]")
@@ -220,5 +221,16 @@ for section_data in data["total"].values():
         c="white",
     )
     t2.set_bbox(dict(facecolor="black", alpha=1.0, edgecolor=None))
+
+# remove top and right axes for all figures
+for ax in [ax1, ax2, ax3]:
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.grid(alpha=0.3)
+
+for ext in ["pdf", "png", "svg"]:
+    fig1.savefig("combined_energy_spectrum.{}".format(ext))
+    fig2.savefig("peak_count_rate.{}".format(ext))
+    fig3.savefig("overall_count_rate.{}".format(ext))
 
 plt.show()
