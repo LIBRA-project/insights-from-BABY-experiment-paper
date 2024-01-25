@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import os
 
 # Define the directory where your CSV files are located
-run_num = 5
 data_directory = "raw_data"
 bin_time = 100
 
@@ -147,10 +146,12 @@ print(data["total"]["Day 1 Steady"]["window"][0])
 print(data["total"]["Day 1 Steady"]["tot count rate"])
 ## Plot relevant count rates in regions of interest
 for section_data in data["total"].values():
-    ax3.plot(
-        section_data["window"],
-        [section_data["tot count rate"][0]] * 2,
-        "--k",
+    ax3.hlines(
+        section_data["tot count rate"][0],
+        section_data["window"][0],
+        section_data["window"][1],
+        colors="k",
+        linestyles="--",
     )
     t = ax3.text(
         np.mean(section_data["window"]),
@@ -161,10 +162,12 @@ for section_data in data["total"].values():
     )
     t.set_bbox(dict(facecolor="black", alpha=1.0, edgecolor=None))
 
-    ax2.plot(
-        section_data["window"],
-        [section_data["peak count rate"][0]] * 2,
-        "--k",
+    ax2.hlines(
+        section_data["peak count rate"][0],
+        section_data["window"][0],
+        section_data["window"][1],
+        colors="k",
+        linestyles="--",
     )
     t2 = ax2.text(
         np.mean(section_data["window"]),
@@ -175,18 +178,18 @@ for section_data in data["total"].values():
     )
     t2.set_bbox(dict(facecolor="black", alpha=1.0, edgecolor=None))
 
-data["A325"]["ave"] = {}
-data["A325"]["ave"]["peak count rate"] = (
-    data["A325"]["Shutdown 1"]["peak count rate"]
-    + data["A325"]["Shutdown 2"]["peak count rate"]
-) / 2
-data["A325"]["ave"]["peak count rate err"] = (
-    np.sqrt(
+data["A325"]["ave"] = {
+    "peak count rate": (
+        data["A325"]["Shutdown 1"]["peak count rate"]
+        + data["A325"]["Shutdown 2"]["peak count rate"]
+    )
+    / 2,
+    "peak count rate err": np.sqrt(
         data["A325"]["Shutdown 1"]["peak count rate err"] ** 2
         + data["A325"]["Shutdown 2"]["peak count rate err"] ** 2
     )
-    / 2
-)
+    / 2,
+}
 
 print(
     "A325 Average (n,alpha) Count Rate: {} +/- {}".format(
@@ -196,16 +199,16 @@ print(
 )
 
 # Get the Day 1 Steady average count rate by assuming that (total - A325) = P383
-data["P383"] = {}
-data["P383"]["ave"] = {}
-data["P383"]["ave"]["peak count rate"] = (
-    data["total"]["Day 1 Steady"]["peak count rate"]
-    - data["A325"]["ave"]["peak count rate"]
-)
-data["P383"]["ave"]["peak count rate err"] = np.sqrt(
-    data["A325"]["ave"]["peak count rate err"] ** 2
-    + data["total"]["Day 1 Steady"]["peak count rate err"] ** 2
-)
+data["P383"] = {
+    "ave": {
+        "peak count rate": data["total"]["Day 1 Steady"]["peak count rate"]
+        - data["A325"]["ave"]["peak count rate"],
+        "peak count rate err": np.sqrt(
+            data["A325"]["ave"]["peak count rate err"] ** 2
+            + data["total"]["Day 1 Steady"]["peak count rate err"] ** 2
+        ),
+    }
+}
 
 print(
     "P383 Average (n,alpha) Count Rate: {} +/- {}".format(
