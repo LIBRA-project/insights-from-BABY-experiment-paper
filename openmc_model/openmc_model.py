@@ -1,18 +1,17 @@
 # %%
 import openmc
 import numpy as np
-import matplotlib.pyplot as plt
-import fng_source_froutine
 from mvng_source import mvng_source_diamonds
+import openmc_data_downloader as odd  # needed to download cross sections on the fly
 
 # %%
 #   MATERIALS
 
 # PbLi - natural - pure
-pbli = openmc.Material(name='pbli')
-pbli.add_element('Pb', 84.2, 'ao')
-pbli.add_element('Li', 15.2, 'ao')
-pbli.set_density('g/cm3', 11)
+pbli = openmc.Material(name="pbli")
+pbli.add_element("Pb", 84.2, "ao")
+pbli.add_element("Li", 15.2, "ao")
+pbli.set_density("g/cm3", 11)
 
 flibe = openmc.Material(name="flibe")
 flibe.add_element("Li", 2.0, "ao")
@@ -21,26 +20,26 @@ flibe.add_element("F", 4.0, "ao")
 flibe.set_density("g/cm3", 1.94)
 
 # lif-licl - natural - pure
-clif = openmc.Material(name='clif')
-clif.add_element('F', .5*.305, 'ao')
-clif.add_element('Li', .5*.305 + .5*.695, 'ao')
-clif.add_element('Cl', .5*.695, 'ao')
-clif.set_density('g/cm3', 2.242)
+clif = openmc.Material(name="clif")
+clif.add_element("F", 0.5 * 0.305, "ao")
+clif.add_element("Li", 0.5 * 0.305 + 0.5 * 0.695, "ao")
+clif.add_element("Cl", 0.5 * 0.695, "ao")
+clif.set_density("g/cm3", 2.242)
 
 # FLiNaK - natural - pure
-flinak = openmc.Material(name='FLiNaK')
-flinak.add_element('F', 50, 'ao')
-flinak.add_element('Li', 23.25, 'ao')
-flinak.add_element('Na', 5.75, 'ao')
-flinak.add_element('K', 21, 'ao')
-flinak.set_density('g/cm3', 2.020)
+flinak = openmc.Material(name="FLiNaK")
+flinak.add_element("F", 50, "ao")
+flinak.add_element("Li", 23.25, "ao")
+flinak.add_element("Na", 5.75, "ao")
+flinak.add_element("K", 21, "ao")
+flinak.set_density("g/cm3", 2.020)
 
 # thermal insulator
-insulator = openmc.Material(name='insulator')
-insulator.add_element('Al', .250, 'ao')
-insulator.add_element('Si', .125, 'ao')
-insulator.add_element('O', .625, 'ao')
-insulator.set_density('g/cm3', .128)
+insulator = openmc.Material(name="insulator")
+insulator.add_element("Al", 0.250, "ao")
+insulator.add_element("Si", 0.125, "ao")
+insulator.add_element("O", 0.625, "ao")
+insulator.set_density("g/cm3", 0.128)
 
 ss316 = openmc.Material(name="ss316")
 ss316.add_element("Cr", 0.18)
@@ -78,8 +77,15 @@ sparge.add_element("H", 0.03, "wo")
 sparge.add_element("He", 0.97, "wo")
 sparge.set_density("g/cm3", 0.0001589)
 
-materials = openmc.Materials([pbli, flibe, ss316, inconel625, air,
-                              sparge, clif, flinak, insulator])
+materials = openmc.Materials(
+    [pbli, flibe, ss316, inconel625, air, sparge, clif, flinak, insulator]
+)
+
+materials.download_cross_section_data(
+    libraries=["FENDL-3.1d"],
+    set_OPENMC_CROSS_SECTIONS=True,
+    particles=["neutron"],
+)
 
 # %%
 # GEOMETRIC PARAMETERS --------------------------------------------------------
@@ -93,19 +99,20 @@ gen_ri = 4.75  # generator inner radius
 gen_xo_min = -36.5  # generator legth behind the Zr-T target
 gen_xo_max = 13.5  # generator length in front of the Zr-T target
 
-cru_t = .15  # crucible thickness
-cru_socket_ri = .238  # crucible socket for heater inner radius
+cru_t = 0.15  # crucible thickness
+cru_socket_ri = 0.238  # crucible socket for heater inner radius
 cru_socket_h = 9.17  # socket inner height
 cru_ri = 2.1  # crucible inner radius
 cru_h = 10.17  # crucible height
 
 # crucible position
-z_bottom_crucible = -3.
+z_bottom_crucible = -3.0
 
-salt_v = 100. * .850  # salt volume measured by Weiyue
-salt_h = (salt_v/np.pi - (cru_h-cru_socket_h)*cru_ri**2) / \
-    (cru_ri**2 - (cru_socket_ri+cru_t)**2)
-salt_h += cru_h-cru_socket_h  # salt height in the crucible
+salt_v = 100.0 * 0.850  # salt volume measured by Weiyue
+salt_h = (salt_v / np.pi - (cru_h - cru_socket_h) * cru_ri**2) / (
+    cru_ri**2 - (cru_socket_ri + cru_t) ** 2
+)
+salt_h += cru_h - cru_socket_h  # salt height in the crucible
 
 # salt_h = salt_v / (np.pi*cru_ri**2)
 
@@ -118,18 +125,18 @@ salt_h += cru_h-cru_socket_h  # salt height in the crucible
 # neutron generator
 cx_1 = openmc.XCylinder(y0=0, z0=0, r=gen_ri)  # generator inner body
 # generator body + thickness
-cx_2 = openmc.XCylinder(y0=0, z0=0, r=gen_ri+gen_t)
+cx_2 = openmc.XCylinder(y0=0, z0=0, r=gen_ri + gen_t)
 px_3 = openmc.XPlane(x0=gen_xo_min)  # generator bottom face (far left)
 # generator bottom face + wall thickness
-px_4 = openmc.XPlane(x0=gen_xo_min+gen_t)
-px_5 = openmc.XPlane(x0=gen_xo_max-gen_t)  # generator top face
+px_4 = openmc.XPlane(x0=gen_xo_min + gen_t)
+px_5 = openmc.XPlane(x0=gen_xo_max - gen_t)  # generator top face
 # generator top face + thickness (far right)
 px_6 = openmc.XPlane(x0=gen_xo_max)
 
 # second generator
 cx_30 = openmc.XCylinder(y0=24.1, z0=0, r=gen_ri)  # generator inner body
 # generator body + thickness
-cx_31 = openmc.XCylinder(y0=24.1, z0=0, r=gen_ri+gen_t)
+cx_31 = openmc.XCylinder(y0=24.1, z0=0, r=gen_ri + gen_t)
 
 # crucible and vessel
 
@@ -138,32 +145,33 @@ y0 = 12.7  # 10.5
 # crucible inner socket
 cz_7 = openmc.ZCylinder(x0=0, y0=y0, r=cru_socket_ri)
 # crucible inner socket + thickness
-cz_8 = openmc.ZCylinder(x0=0, y0=y0, r=cru_socket_ri+cru_t)
+cz_8 = openmc.ZCylinder(x0=0, y0=y0, r=cru_socket_ri + cru_t)
 cz_9 = openmc.ZCylinder(x0=0, y0=y0, r=cru_ri)  # crucible inner body
 # crucible inner body + thickness
-cz_10 = openmc.ZCylinder(x0=0, y0=y0, r=cru_ri+cru_t)
-pz_14 = openmc.ZPlane(z0=z_bottom_crucible-2.)  # bottom insulator
+cz_10 = openmc.ZCylinder(x0=0, y0=y0, r=cru_ri + cru_t)
+pz_14 = openmc.ZPlane(z0=z_bottom_crucible - 2.0)  # bottom insulator
 pz_15 = openmc.ZPlane(z0=z_bottom_crucible)  # bottom crucible
 # bottom crucible + thickness
-pz_16 = openmc.ZPlane(z0=z_bottom_crucible+cru_t)
-pz_17 = openmc.ZPlane(z0=z_bottom_crucible+cru_t+cru_h -
-                      cru_socket_h-cru_t)  # crucible socket bottom
+pz_16 = openmc.ZPlane(z0=z_bottom_crucible + cru_t)
+pz_17 = openmc.ZPlane(
+    z0=z_bottom_crucible + cru_t + cru_h - cru_socket_h - cru_t
+)  # crucible socket bottom
 # crucible socket bottom + thickness
-pz_18 = openmc.ZPlane(z0=z_bottom_crucible+cru_t+cru_h-cru_socket_h)
-pz_19 = openmc.ZPlane(z0=z_bottom_crucible+cru_t+salt_h)  # flibe free surface
-pz_20 = openmc.ZPlane(z0=z_bottom_crucible+cru_t+cru_h)  # top cucible
-pz_21 = openmc.ZPlane(z0=z_bottom_crucible+cru_t+cru_h +
-                      cru_t)  # top crucible + thickness
-pz_22 = openmc.ZPlane(z0=z_bottom_crucible+cru_t +
-                      cru_h+cru_t+2)  # top insulator
+pz_18 = openmc.ZPlane(z0=z_bottom_crucible + cru_t + cru_h - cru_socket_h)
+pz_19 = openmc.ZPlane(z0=z_bottom_crucible + cru_t + salt_h)  # flibe free surface
+pz_20 = openmc.ZPlane(z0=z_bottom_crucible + cru_t + cru_h)  # top cucible
+pz_21 = openmc.ZPlane(
+    z0=z_bottom_crucible + cru_t + cru_h + cru_t
+)  # top crucible + thickness
+pz_22 = openmc.ZPlane(z0=z_bottom_crucible + cru_t + cru_h + cru_t + 2)  # top insulator
 
 # insulator
-cz_24 = openmc.ZCylinder(x0=0, y0=y0, r=cru_ri+cru_t+2.5)
-cz_25 = openmc.ZCylinder(x0=0, y0=y0, r=cru_ri+cru_t+2.8)
+cz_24 = openmc.ZCylinder(x0=0, y0=y0, r=cru_ri + cru_t + 2.5)
+cz_25 = openmc.ZCylinder(x0=0, y0=y0, r=cru_ri + cru_t + 2.8)
 
 
 # outer region
-so_999 = openmc.Sphere(x0=0, y0=0, z0=0, r=500., boundary_type='vacuum')
+so_999 = openmc.Sphere(x0=0, y0=0, z0=0, r=500.0, boundary_type="vacuum")
 
 # regions
 # neutron generator 1
@@ -176,40 +184,62 @@ region_31 = +px_3 & -px_6 & -cx_31 & (-px_4 | +px_5 | +cx_30)  # ss shell
 # crucible, flibe and vessel
 region_3 = +pz_16 & -pz_19 & -cz_9 & (-pz_17 | +cz_8)  # salt
 region_4 = +pz_19 & -pz_20 & -cz_9 & +cz_8  # sparge gas in crucible
-region_5 = +pz_15 & -pz_21 & - \
-    cz_10 & (-pz_16 | +pz_20 | +cz_9 | (+pz_17 & -cz_8)) & (-pz_18 | +cz_7)
+region_5 = (
+    +pz_15
+    & -pz_21
+    & -cz_10
+    & (-pz_16 | +pz_20 | +cz_9 | (+pz_17 & -cz_8))
+    & (-pz_18 | +cz_7)
+)
 
 region_8 = +pz_14 & -pz_22 & +cz_10 & -cz_24
 region_9 = +pz_14 & -pz_22 & +cz_24 & -cz_25
 
-region_999 = -so_999 & ~(region_1 | region_2 |
-                         region_30 | region_31 | region_3 |
-                         region_4 | region_5 | region_8 | region_9)
+region_999 = -so_999 & ~(
+    region_1
+    | region_2
+    | region_30
+    | region_31
+    | region_3
+    | region_4
+    | region_5
+    | region_8
+    | region_9
+)
 
 # cells
 
 # neutron generator
 cell_1 = openmc.Cell(cell_id=1, fill=None, region=region_1)  # generator void
 cell_2 = openmc.Cell(cell_id=2, fill=ss316, region=region_2)  # generator shell
-cell_30 = openmc.Cell(cell_id=30, fill=None,
-                      region=region_30)  # generator void
-cell_31 = openmc.Cell(cell_id=31, fill=ss316,
-                      region=region_31)  # generator shell
+cell_30 = openmc.Cell(cell_id=30, fill=None, region=region_30)  # generator void
+cell_31 = openmc.Cell(cell_id=31, fill=ss316, region=region_31)  # generator shell
 # salt
 cell_3 = openmc.Cell(cell_id=3, fill=pbli, region=region_3)  # salt
 # sparge gas in crucible
 cell_4 = openmc.Cell(cell_id=4, fill=sparge, region=region_4)
-cell_5 = openmc.Cell(cell_id=5, fill=inconel625,
-                     region=region_5)  # crucible shell
+cell_5 = openmc.Cell(cell_id=5, fill=inconel625, region=region_5)  # crucible shell
 
 cell_8 = openmc.Cell(cell_id=8, fill=insulator, region=region_8)  # insulator
 cell_9 = openmc.Cell(cell_id=9, fill=insulator, region=region_9)  # insulator
 
-cell_999 = openmc.Cell(cell_id=999, fill=air,
-                       region=region_999)  # outer sphere
+cell_999 = openmc.Cell(cell_id=999, fill=air, region=region_999)  # outer sphere
 
-universe = openmc.Universe(name='universe',
-                           cells=[cell_1, cell_2, cell_30, cell_31, cell_3, cell_4, cell_5, cell_8, cell_9, cell_999])
+universe = openmc.Universe(
+    name="universe",
+    cells=[
+        cell_1,
+        cell_2,
+        cell_30,
+        cell_31,
+        cell_3,
+        cell_4,
+        cell_5,
+        cell_8,
+        cell_9,
+        cell_999,
+    ],
+)
 
 
 geometry = openmc.Geometry(universe)
@@ -228,12 +258,12 @@ breeder_filter = openmc.CellFilter([cell_3])
 # cell tally - salt tbr
 tally1 = openmc.Tally(1, "salt_cell_tbr")
 tally1.filters = [breeder_filter]
-tally1.scores = ['(n,Xt)']
-tally1.nuclides = ['Li6', 'Li7', 'F19']
+tally1.scores = ["(n,Xt)"]
+tally1.nuclides = ["Li6", "Li7", "F19"]
 #
 tally2 = openmc.Tally(2, "salt_cell_tbr2")
 tally2.filters = [breeder_filter]
-tally2.scores = ['(n,Xt)']
+tally2.scores = ["(n,Xt)"]
 
 tallies = openmc.Tallies([tally1, tally2])
 
@@ -258,16 +288,17 @@ for s in source2:
 
 # settings
 settings = openmc.Settings()
-settings.run_mode = 'fixed source'
+settings.run_mode = "fixed source"
 settings.source = my_source
 settings.batches = 100
 settings.particles = int(1e7)
-settings.output = {'tallies': False}
+settings.output = {"tallies": False}
 
 # %%
 # run
 
-model = openmc.Model(materials=materials, geometry=geometry,
-                     settings=settings, tallies=tallies)
+model = openmc.Model(
+    materials=materials, geometry=geometry, settings=settings, tallies=tallies
+)
 
 model.run(threads=16)
