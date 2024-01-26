@@ -27,7 +27,7 @@ clif.add_element("Cl", 0.5 * 0.695, "ao")
 clif.set_density("g/cm3", 2.242)
 
 # FLiNaK - natural - pure
-flinak = openmc.Material(name="FLiNaK")
+flinak = openmc.Material(name="flinak")
 flinak.add_element("F", 50, "ao")
 flinak.add_element("Li", 23.25, "ao")
 flinak.add_element("Na", 5.75, "ao")
