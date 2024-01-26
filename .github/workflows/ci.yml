@@ -46,7 +46,7 @@ jobs:
       shell: bash -l {0}
       working-directory: ./openmc_model
       run: |
-        python -c "from openmc_model import main; main(nb_batches=2)"
+        python -c "from openmc_model import main; main(batches=2, particles=1e5)"
 
     - name: check files exist
       shell: bash -l {0}

@@ -78,7 +78,7 @@ sparge.add_element("He", 0.97, "wo")
 sparge.set_density("g/cm3", 0.0001589)
 
 
-def make_model(breeder_material, nb_batches=100):
+def make_model(breeder_material, batches, particles):
     materials = openmc.Materials(
         [pbli, flibe, ss316, inconel625, air, sparge, clif, flinak, insulator]
     )
@@ -290,8 +290,8 @@ def make_model(breeder_material, nb_batches=100):
     settings = openmc.Settings()
     settings.run_mode = "fixed source"
     settings.source = my_source
-    settings.batches = nb_batches
-    settings.particles = int(1e7)
+    settings.batches = batches
+    settings.particles = int(particles)
     settings.output = {"tallies": False}
 
     # %%
@@ -303,9 +303,9 @@ def make_model(breeder_material, nb_batches=100):
     return model
 
 
-def main(nb_batches=100):
+def main(batches=100, particles=int(1e7)):
     for breeder_material in [pbli, flibe, clif, flinak]:
-        model = make_model(breeder_material, nb_batches=nb_batches)
+        model = make_model(breeder_material, batches=batches, particles=particles)
         model.run(threads=16)
         import os
 
@@ -317,4 +317,4 @@ def main(nb_batches=100):
 
 
 if __name__ == "__main__":
-    main(nb_batches=100)
+    main(batches=100, particles=int(1e7))
