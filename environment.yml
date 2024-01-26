@@ -1,0 +1,9 @@
+name: baby-paper-env
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9
+  - openmc # add version tag
+  - numpy # add version tag
+  - scipy # add version tag
+  - matplotlib # add version tag

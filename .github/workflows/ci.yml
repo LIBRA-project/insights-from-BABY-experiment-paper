@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    # write a step to setup conda with environment.yml
+    - name: Setup conda
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        environment-file: environment.yml
+        activate-environment: baby-paper-env
+
+    - name: Run process_det_data.py
+      shell: bash -l {0}
+      working-directory: ./neutron_detection/diamond
+      run: |
+        python process_det_data.py
