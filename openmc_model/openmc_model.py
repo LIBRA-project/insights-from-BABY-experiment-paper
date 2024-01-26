@@ -322,14 +322,10 @@ def main(batches: int = 100, particles: int = int(1e7)):
     """
     for breeder_material in [pbli, flibe, clif, flinak]:
         model = make_model(breeder_material, batches=batches, particles=particles)
-        model.run(threads=16)
-        import os
-
-        os.rename(
-            f"statepoint.{model.settings.batches}.h5",
-            f"statepoint_{breeder_material.name}.{model.settings.batches}.h5",
+        model.run(
+            threads=16,
+            cwd=breeder_material.name,
         )
-        os.remove("summary.h5")
 
 
 if __name__ == "__main__":
