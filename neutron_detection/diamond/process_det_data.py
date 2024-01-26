@@ -17,19 +17,17 @@ all_count_rate_bins = res["all_count_rate_bins"]
 
 ### Calculate average neutron rate for each generator
 data = {
-    "total": {
-        "Day 1 Steady": {"window": [25810, 42970]},
-        "Day 1 Jump": {"window": [43062, 50200]},
-        "Day 2 Steady": {"window": [106870, 133300]},
-    },
+    "Day 1 Steady": {"window": [25810, 42970]},
+    "Day 1 Jump": {"window": [43062, 50200]},
+    "Day 2 Steady": {"window": [106870, 133300]},
 }
 
-for gen, gen_data in data.items():
-    print(gen)
-    for section, section_data in gen_data.items():
-        new_dict = get_avg_neutron_rate(res, section_data["window"])
-        for key, value in new_dict.items():
-            section_data[key] = value
+for section_data in data.values():
+    new_dict = get_avg_neutron_rate(
+        res["time_values"], res["peak_time_values"], section_data["window"]
+    )
+    for key, value in new_dict.items():
+        section_data[key] = value
 
 fig1, ax1 = plt.subplots()
 ax1.hist(energy_values, bins=300, histtype="step")
@@ -52,7 +50,7 @@ ax3.set_xlabel("Time (s)")
 ax3.set_ylabel("Total Count Rate (CPS)")
 
 ## Plot relevant count rates in regions of interest
-for section_data in data["total"].values():
+for section_data in data.values():
     ax3.hlines(
         section_data["tot count rate"][0],
         section_data["window"][0],

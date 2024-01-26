@@ -64,11 +64,9 @@ def main(directory, bin_time, energy_peak_min, energy_peak_max):
     return res
 
 
-def get_avg_neutron_rate(res, window):
+def get_avg_neutron_rate(time_values, peak_time_values, window):
     section_data = {}
     # Create mask to only count pulses of any energy in section time window
-    time_values = res["time_values"]
-    peak_time_values = res["peak_time_values"]
 
     tot_time_mask = np.logical_and(
         time_values > window[0],
