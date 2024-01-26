@@ -34,8 +34,6 @@ def main(directory, bin_time, energy_peak_min, energy_peak_max):
     time_values = np.array(time_values)[inds]
     time_values *= 1 / 1e12  # ps to s
 
-    bin_time = 100
-
     time_bins = np.arange(0, time_values[-2], bin_time)
     energy_values = np.array(energy_values)[inds]
 

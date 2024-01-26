@@ -5,9 +5,7 @@ from helpers import main, get_avg_neutron_rate
 
 
 # Define the directory where your CSV files are located
-data_directory = "raw_data"
-
-res = main(data_directory, bin_time=100, energy_peak_min=1180, energy_peak_max=1300)
+res = main(directory="run_6", bin_time=1000, energy_peak_min=1180, energy_peak_max=1300)
 energy_values = res["energy_values"]
 time_values = res["time_values"]
 peak_count_rates = res["peak_count_rates"]
@@ -17,9 +15,9 @@ all_count_rate_bins = res["all_count_rate_bins"]
 
 ### Calculate average neutron rate for each generator
 data = {
-    "Day 1 Steady": {"window": [25810, 42970]},
-    "Day 1 Jump": {"window": [43062, 50200]},
-    "Day 2 Steady": {"window": [106870, 133300]},
+    # "Day 1 Steady": {"window": [25810, 42970]},
+    # "Day 1 Jump": {"window": [43062, 50200]},
+    # "Day 2 Steady": {"window": [106870, 133300]},
 }
 
 for section_data in data.values():
