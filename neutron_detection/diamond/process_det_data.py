@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from helpers import main
+from helpers import main, get_avg_neutron_rate
 
 
 # Define the directory where your CSV files are located
@@ -14,7 +14,22 @@ peak_count_rates = res["peak_count_rates"]
 peak_count_rate_bins = res["peak_count_rate_bins"]
 all_count_rates = res["all_count_rates"]
 all_count_rate_bins = res["all_count_rate_bins"]
-data = res["data"]
+
+### Calculate average neutron rate for each generator
+data = {
+    "total": {
+        "Day 1 Steady": {"window": [25810, 42970]},
+        "Day 1 Jump": {"window": [43062, 50200]},
+        "Day 2 Steady": {"window": [106870, 133300]},
+    },
+}
+
+for gen, gen_data in data.items():
+    print(gen)
+    for section, section_data in gen_data.items():
+        new_dict = get_avg_neutron_rate(res, section_data["window"])
+        for key, value in new_dict.items():
+            section_data[key] = value
 
 fig1, ax1 = plt.subplots()
 ax1.hist(energy_values, bins=300, histtype="step")

@@ -47,80 +47,11 @@ def main(directory, bin_time, energy_peak_min, energy_peak_max):
     peak_count_rates, peak_count_rate_bins = np.histogram(
         peak_time_values, bins=time_bins
     )
-    peak_count_rates *= 1 / bin_time
+    peak_count_rates = peak_count_rates / bin_time
 
     all_count_rates, all_count_rate_bins = np.histogram(time_values, bins=time_bins)
-    all_count_rates *= 1 / bin_time
+    all_count_rates = all_count_rates / bin_time
 
-    ### Calculate average neutron rate for each generator
-    data = {
-        "total": {
-            "Day 1 Steady": {"window": [25810, 42970]},
-            "Day 1 Jump": {"window": [43062, 50200]},
-            "Day 2 Steady": {"window": [106870, 133300]},
-        },
-    }
-
-    for gen, gen_data in data.items():
-        print(gen)
-        for section, section_data in gen_data.items():
-            # Create mask to only count pulses of any energy in section time window
-            tot_time_mask = np.logical_and(
-                time_values > section_data["window"][0],
-                time_values < section_data["window"][1],
-            )
-
-            # Create mask to only count pulses from (n,alpha) peak in section time window
-            peak_time_mask = np.logical_and(
-                peak_time_values > section_data["window"][0],
-                peak_time_values < section_data["window"][1],
-            )
-
-            section_data["tot counts"] = len(time_values[tot_time_mask])
-            section_data["tot err"] = np.sqrt(len(time_values[tot_time_mask]))
-            section_data["tot count rate"] = section_data["tot counts"] / np.diff(
-                section_data["window"]
-            )
-            section_data["tot count rate err"] = section_data["tot err"] / np.diff(
-                section_data["window"]
-            )
-
-            section_data["peak counts"] = len(peak_time_values[peak_time_mask])
-            section_data["peak err"] = np.sqrt(len(peak_time_values[peak_time_mask]))
-            section_data["peak count rate"] = section_data["peak counts"] / np.diff(
-                section_data["window"]
-            )
-            section_data["peak count rate err"] = section_data["peak err"] / np.diff(
-                section_data["window"]
-            )
-
-            print("\tSection: {}".format(section))
-            print(
-                "\t\tTotal Counts: {} +/- {}".format(
-                    section_data["tot counts"], section_data["tot err"]
-                )
-            )
-            print(
-                "\t\tTotal Count Rate: {} +/- {}".format(
-                    section_data["tot count rate"],
-                    section_data["tot count rate err"],
-                )
-            )
-            print(
-                "\t\tPeak Counts: {} +/- {}".format(
-                    section_data["peak counts"], section_data["peak err"]
-                )
-            )
-            print(
-                "\t\tPeak Count Rate: {} +/- {}".format(
-                    section_data["peak count rate"],
-                    section_data["peak count rate err"],
-                )
-            )
-
-    print(data["total"]["Day 1 Steady"]["window"])
-    print(data["total"]["Day 1 Steady"]["window"][0])
-    print(data["total"]["Day 1 Steady"]["tot count rate"])
     res = {
         "all_count_rates": all_count_rates,
         "all_count_rate_bins": all_count_rate_bins,
@@ -128,6 +59,64 @@ def main(directory, bin_time, energy_peak_min, energy_peak_max):
         "energy_values": energy_values,
         "peak_count_rates": peak_count_rates,
         "peak_count_rate_bins": peak_count_rate_bins,
-        "data": data,
+        "peak_time_values": peak_time_values,
     }
     return res
+
+
+def get_avg_neutron_rate(res, window):
+    section_data = {}
+    # Create mask to only count pulses of any energy in section time window
+    time_values = res["time_values"]
+    peak_time_values = res["peak_time_values"]
+
+    tot_time_mask = np.logical_and(
+        time_values > window[0],
+        time_values < window[1],
+    )
+
+    # Create mask to only count pulses from (n,alpha) peak in section time window
+    peak_time_mask = np.logical_and(
+        peak_time_values > window[0],
+        peak_time_values < window[1],
+    )
+
+    section_data["tot counts"] = len(time_values[tot_time_mask])
+    section_data["tot err"] = np.sqrt(len(time_values[tot_time_mask]))
+    window_range = np.diff(window)
+    section_data["tot count rate"] = section_data["tot counts"] / window_range
+    section_data["tot count rate err"] = section_data["tot err"] / window_range
+
+    section_data["peak counts"] = len(peak_time_values[peak_time_mask])
+    section_data["peak err"] = np.sqrt(len(peak_time_values[peak_time_mask]))
+    section_data["peak count rate"] = section_data["peak counts"] / window_range
+    section_data["peak count rate err"] = section_data["peak err"] / window_range
+
+    print("\tSection: {}".format(section_data))
+    print(
+        "\t\tTotal Counts: {} +/- {}".format(
+            section_data["tot counts"], section_data["tot err"]
+        )
+    )
+    print(
+        "\t\tTotal Count Rate: {} +/- {}".format(
+            section_data["tot count rate"],
+            section_data["tot count rate err"],
+        )
+    )
+    print(
+        "\t\tPeak Counts: {} +/- {}".format(
+            section_data["peak counts"], section_data["peak err"]
+        )
+    )
+    print(
+        "\t\tPeak Count Rate: {} +/- {}".format(
+            section_data["peak count rate"],
+            section_data["peak count rate err"],
+        )
+    )
+    return section_data
+
+
+if __name__ == "__main__":
+    pass
