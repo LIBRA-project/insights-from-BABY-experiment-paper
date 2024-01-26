@@ -78,7 +78,17 @@ sparge.add_element("He", 0.97, "wo")
 sparge.set_density("g/cm3", 0.0001589)
 
 
-def make_model(breeder_material, batches, particles):
+def make_model(breeder_material: openmc.Material, batches: int, particles: int):
+    """Returns an openmc model for the BABY experiment with one type of breeder material
+
+    Args:
+        breeder_material (openmc.Material): the breeder material
+        batches (int): number of batches
+        particles (int): number of particles per batch
+
+    Returns:
+        openmc.Model: the openmc model for the BABY experiment
+    """
     materials = openmc.Materials(
         [pbli, flibe, ss316, inconel625, air, sparge, clif, flinak, insulator]
     )
@@ -303,7 +313,13 @@ def make_model(breeder_material, batches, particles):
     return model
 
 
-def main(batches=100, particles=int(1e7)):
+def main(batches: int = 100, particles: int = int(1e7)):
+    """Main function running the openmc model for four different breeders
+
+    Args:
+        batches (int, optional): Number of batches. Defaults to 100.
+        particles (int, optional): Number of particles per batch. Defaults to int(1e7).
+    """
     for breeder_material in [pbli, flibe, clif, flinak]:
         model = make_model(breeder_material, batches=batches, particles=particles)
         model.run(threads=16)
