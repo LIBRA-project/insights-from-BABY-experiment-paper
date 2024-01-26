@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  diamond_detector:
 
     runs-on: ubuntu-latest
 
@@ -26,3 +26,53 @@ jobs:
       working-directory: ./neutron_detection/diamond
       run: |
         python process_det_data.py
+
+
+  openmc:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    # write a step to setup conda with environment.yml
+    - name: Setup conda
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        environment-file: environment.yml
+        activate-environment: baby-paper-env
+
+    - name: run openmc
+      shell: bash -l {0}
+      working-directory: ./openmc_model
+      run: |
+        python -c "from openmc_model import main; main(batches=2, particles=1e5)"
+
+    - name: check files exist
+      shell: bash -l {0}
+      working-directory: ./openmc_model
+      run: |
+        # Array of filenames to check
+        file_names=("pbli/statepoint.2.h5" "flibe/statepoint.2.h5" "clif/statepoint.2.h5" "flinak/statepoint.2.h5")
+
+        # Function to check if a file exists
+        check_file_exists() {
+          if [ ! -e "$1" ]; then
+            echo "Error: File '$1' not found."
+            exit 1
+          fi
+        }
+
+        # Loop over each filename
+        for file in "${file_names[@]}"; do
+          check_file_exists "$file"
+        done
+
+        echo "All files exist."
+    
+    - name: Run OpenMC post-processing
+      shell: bash -l {0}
+      working-directory: ./openmc_model
+      run: |
+        jupyter-nbconvert --to python postprocessing.ipynb
+        python postprocessing.py
