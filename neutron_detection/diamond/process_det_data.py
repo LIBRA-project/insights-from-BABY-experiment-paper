@@ -5,19 +5,23 @@ from helpers import main, get_avg_neutron_rate
 
 
 # Define the directory where your CSV files are located
-res = main(directory="run_6", bin_time=1000, energy_peak_min=1180, energy_peak_max=1300)
-energy_values = res["energy_values"]
-time_values = res["time_values"]
-peak_count_rates = res["peak_count_rates"]
-peak_count_rate_bins = res["peak_count_rate_bins"]
-all_count_rates = res["all_count_rates"]
-all_count_rate_bins = res["all_count_rate_bins"]
+data_runs = {}
+# for run, directory in zip([5, 6], ["raw_data", "run_6"]):
+#     res = main(
+#         directory=directory, bin_time=1000, energy_peak_min=1180, energy_peak_max=1300
+#     )
+#     data_runs[run] = res
+
+res = main(
+    directory="raw_data", bin_time=1000, energy_peak_min=1180, energy_peak_max=1300
+)
+data_runs[5] = res
 
 ### Calculate average neutron rate for each generator
 data = {
-    # "Day 1 Steady": {"window": [25810, 42970]},
-    # "Day 1 Jump": {"window": [43062, 50200]},
-    # "Day 2 Steady": {"window": [106870, 133300]},
+    "Day 1 Steady": {"window": [25810, 42970]},
+    "Day 1 Jump": {"window": [43062, 50200]},
+    "Day 2 Steady": {"window": [106870, 133300]},
 }
 
 for section_data in data.values():
@@ -28,22 +32,42 @@ for section_data in data.values():
         section_data[key] = value
 
 fig1, ax1 = plt.subplots()
-ax1.hist(energy_values, bins=300, histtype="step")
+for run, res in data_runs.items():
+    ax1.hist(
+        res["energy_values"], bins=300, histtype="step", label="Run {}".format(run)
+    )
 # ax1.set_title("Combined Energy Spectrum")
+ax1.legend()
 ax1.set_xlabel("Energy Channel")
 ax1.set_ylabel("Counts")
-print(time_values)
-print(time_values.max())
 
 
 fig2, ax2 = plt.subplots()
-ax2.stairs(peak_count_rates, edges=peak_count_rate_bins)
+for run, res in data_runs.items():
+    t_0_idx = np.where(res["peak_count_rates"] > 1)[0][0]
+    t_0 = res["peak_count_rate_bins"][t_0_idx]
+    bins_rescaled = res["peak_count_rate_bins"] - t_0
+    ax2.stairs(
+        res["peak_count_rates"],
+        edges=bins_rescaled,
+        label="Run {}".format(run),
+    )
+ax2.legend()
 ax2.set_xlabel("Time (s)")
 ax2.set_ylabel(r"(n,$\alpha$) Count Rate (CPS)")
 
 
 fig3, ax3 = plt.subplots()
-ax3.stairs(all_count_rates, edges=all_count_rate_bins)
+for run, res in data_runs.items():
+    t_0_idx = np.where(res["all_count_rates"] > 1)[0][0]
+    t_0 = res["all_count_rate_bins"][t_0_idx]
+    bins_rescaled = res["all_count_rate_bins"] - t_0
+    ax3.stairs(
+        res["all_count_rates"],
+        edges=bins_rescaled,
+        label="Run {}".format(run),
+    )
+ax3.legend()
 ax3.set_xlabel("Time (s)")
 ax3.set_ylabel("Total Count Rate (CPS)")
 
