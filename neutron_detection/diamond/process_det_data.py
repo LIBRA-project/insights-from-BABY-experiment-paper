@@ -12,10 +12,8 @@ data_runs = {}
 #     )
 #     data_runs[run] = res
 
-res = main(
-    directory="raw_data", bin_time=1000, energy_peak_min=1180, energy_peak_max=1300
-)
-data_runs[5] = res
+res = main(directory="run_5", bin_time=200, energy_peak_min=1180, energy_peak_max=1300)
+data_runs[6] = res
 
 ### Calculate average neutron rate for each generator
 data = {
