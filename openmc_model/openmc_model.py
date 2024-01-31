@@ -370,10 +370,10 @@ def main(batches: int = 100, particles: int = int(1e7)):
     for breeder_material in [pbli, flibe, clif, flinak]:
         model = make_model(breeder_material, batches=batches,
                            particles=particles)
-        # model.run(
-        #     threads=16,
-        #     cwd=breeder_material.name,
-        # )
+        model.run(
+            threads=16,
+            cwd=breeder_material.name,
+        )
 
 
 if __name__ == "__main__":
