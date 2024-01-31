@@ -1,19 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+import matplotlib.ticker as mticker
 from helpers import main, get_avg_neutron_rate
 
 
 # Define the directory where your CSV files are located
 data_runs = {}
-# for run, directory in zip([5, 6], ["raw_data", "run_6"]):
-#     res = main(
-#         directory=directory, bin_time=1000, energy_peak_min=1180, energy_peak_max=1300
-#     )
-#     data_runs[run] = res
-
-res = main(directory="run_5", bin_time=200, energy_peak_min=1180, energy_peak_max=1300)
-data_runs[6] = res
+for run, directory in zip([5], ["run_5"]):
+    res = main(
+        directory=directory, bin_time=1000, energy_peak_min=1180, energy_peak_max=1300
+    )
+    data_runs[run] = res
 
 ### Calculate average neutron rate for each generator
 data = {
@@ -32,13 +29,19 @@ for section_data in data.values():
 fig1, ax1 = plt.subplots()
 for run, res in data_runs.items():
     ax1.hist(
-        res["energy_values"], bins=300, histtype="step", label="Run {}".format(run)
+        res["energy_values"],
+        bins=300,
+        histtype="stepfilled",
+        label="Run {}".format(run),
     )
 # ax1.set_title("Combined Energy Spectrum")
-ax1.legend()
+if len(data_runs) > 1:
+    ax1.legend()
 ax1.set_xlabel("Energy Channel")
 ax1.set_ylabel("Counts")
-
+plt.gca().yaxis.set_major_formatter(
+    mticker.ScalarFormatter(useOffset=False, useMathText=True)
+)
 
 fig2, ax2 = plt.subplots()
 for run, res in data_runs.items():
@@ -50,7 +53,8 @@ for run, res in data_runs.items():
         edges=bins_rescaled,
         label="Run {}".format(run),
     )
-ax2.legend()
+if len(data_runs) > 1:
+    ax2.legend()
 ax2.set_xlabel("Time (s)")
 ax2.set_ylabel(r"(n,$\alpha$) Count Rate (CPS)")
 
@@ -65,7 +69,8 @@ for run, res in data_runs.items():
         edges=bins_rescaled,
         label="Run {}".format(run),
     )
-ax3.legend()
+if len(data_runs) > 1:
+    ax3.legend()
 ax3.set_xlabel("Time (s)")
 ax3.set_ylabel("Total Count Rate (CPS)")
 
@@ -104,17 +109,20 @@ for section_data in data.values():
     t2.set_bbox(dict(facecolor="black", alpha=1.0, edgecolor=None))
 
 # add 14 MeV peak annotation
-# ax1.annotate(
-#     "14 MeV peak",
-#     # xy=(np.mean(energy_peak_min, energy_peak_max), 0.2),
-#     xy=(1300, 0.2),
-# )
+ax1.annotate(
+    r"(n,$\alpha$) peak",
+    xy=(1260, 7e4),
+    xytext=(1300, 0.2e6),
+    arrowprops=dict(arrowstyle="->"),
+)
 
 # remove top and right axes for all figures
 for ax in [ax1, ax2, ax3]:
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.grid(alpha=0.3)
+    ax.set_axisbelow(True)
+
 
 for ext in ["pdf", "png", "svg"]:
     fig1.savefig("combined_energy_spectrum.{}".format(ext))
