@@ -1,11 +1,10 @@
-# %%
 import openmc
 import numpy as np
 from mvng_source import mvng_source_diamonds
 # needed to download cross sections on the fly
 import openmc_data_downloader as odd
+import matplotlib.pyplot as plt
 
-# %%
 #   MATERIALS
 
 # PbLi - natural - pure
@@ -100,7 +99,6 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
         particles=["neutron"],
     )
 
-    # %%
     # GEOMETRIC PARAMETERS --------------------------------------------------------
     # Numbered radii with low numbers correspond to inner radii and high numbers
     # move concentrically outward. Numbered "z"-values go from lowest to highest
@@ -121,16 +119,14 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
     # crucible position
     z_bottom_crucible = -3.0
 
-    salt_mass = 190  # g
-    salt_v = salt_mass / breeder_material.density  # salt volume measured by Weiyue
+    salt_mass = 190  # g salt mass measured by Weiyue
+    salt_v = salt_mass / breeder_material.density
     salt_h = (salt_v / np.pi - (cru_h - cru_socket_h) * cru_ri**2) / (
         cru_ri**2 - (cru_socket_ri + cru_t) ** 2
     )
     salt_h += cru_h - cru_socket_h  # salt height in the crucible
 
     # salt_h = salt_v / (np.pi*cru_ri**2)
-
-    # %%
 
     # GEOMETY
 
@@ -265,11 +261,30 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
             cell_999,
         ],
     )
-
+    mc = {
+        breeder_material: (30, 12, 245),
+        ss316: (74, 73, 108),
+        inconel625: (181, 38, 24),
+        air: (190, 253, 254),
+        sparge: (188, 252, 143),
+        insulator: (254, 255, 145),
+    }
+    # fig, ax = plt.subplots()
+    universe.plot(
+        origin=(0,12.7,0),
+        width=(40, 25),
+        pixels=int(5e5),
+        basis='yz',
+        color_by='material',
+        colors=mc,
+        outline=True,
+        legend=True,
+        )
+    plt.tight_layout()
+    plt.savefig(f"geometry_{breeder_material.name}.png")
     geometry = openmc.Geometry(universe)
     geometry.merge_surfaces = True
 
-    # %%
     # TALLIES
 
     # cell filters
@@ -291,7 +306,6 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
 
     tallies = openmc.Tallies([tally1, tally2])
 
-    # %%
     # SETTINGS
 
     # source definition
@@ -317,14 +331,10 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
     settings.particles = int(particles)
     settings.output = {"tallies": False}
 
-    # %%
-    # run
-
     model = openmc.Model(
         materials=materials, geometry=geometry, settings=settings, tallies=tallies
     )
     return model
-
 
 def main(batches: int = 100, particles: int = int(1e7)):
     """Main function running the openmc model for four different breeders
