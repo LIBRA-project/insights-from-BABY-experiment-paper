@@ -53,7 +53,7 @@ jobs:
       working-directory: ./openmc_model
       run: |
         # Array of filenames to check
-        file_names=("pbli/statepoint.2.h5" "flibe/statepoint.2.h5" "clif/statepoint.2.h5" "flinak/statepoint.2.h5")
+        file_names=("pbli/statepoint.2.h5" "flibe/statepoint.2.h5" "clif/statepoint.2.h5" "flinak/statepoint.2.h5" "geometry_clif.pdf" )
 
         # Function to check if a file exists
         check_file_exists() {
