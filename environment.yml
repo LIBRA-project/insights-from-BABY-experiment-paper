@@ -10,3 +10,4 @@ dependencies:
   - pip:
     - openmc_data_downloader
     - nbconvert
+    - openmc-plotter
