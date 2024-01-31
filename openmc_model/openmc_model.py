@@ -1,11 +1,13 @@
-# %%
 import openmc
 import numpy as np
 from mvng_source import mvng_source_diamonds
 # needed to download cross sections on the fly
 import openmc_data_downloader as odd
+import matplotlib.pyplot as plt
+from clif_density import get_cllif_density
 
-# %%
+plt.rc('font', size=16) 
+
 #   MATERIALS
 
 # PbLi - natural - pure
@@ -25,7 +27,11 @@ clif = openmc.Material(name="clif")
 clif.add_element("F", 0.5 * 0.305, "ao")
 clif.add_element("Li", 0.5 * 0.305 + 0.5 * 0.695, "ao")
 clif.add_element("Cl", 0.5 * 0.695, "ao")
-clif.set_density("g/cm3", 1.536)
+
+temperature = 700 #degC
+clif_density = get_cllif_density(temperature, LiCl_frac=0.695, cl37_enr=0.2424)
+print(f"ClLiF density at {temperature} degC: {clif_density:.2e} g/cc")
+clif.set_density("g/cm3", clif_density)
 
 # FLiNaK - natural - pure
 flinak = openmc.Material(name="flinak")
@@ -78,6 +84,17 @@ sparge.add_element("H", 0.03, "wo")
 sparge.add_element("He", 0.97, "wo")
 sparge.set_density("g/cm3", 0.0001589)
 
+name_to_pretty = {
+    clif.name: "ClLiF",
+    flinak.name: "FLiNaK",
+    flibe.name: "FLiBe",
+    pbli.name: "PbLi",
+    ss316.name: "SS316",
+    inconel625.name: "Inconel625",
+    air.name: "Air",
+    sparge.name: "Sparge gas",
+    insulator.name: "Insulator",
+}
 
 def make_model(breeder_material: openmc.Material, batches: int, particles: int):
     """Returns an openmc model for the BABY experiment with one type of breeder material
@@ -100,7 +117,6 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
         particles=["neutron"],
     )
 
-    # %%
     # GEOMETRIC PARAMETERS --------------------------------------------------------
     # Numbered radii with low numbers correspond to inner radii and high numbers
     # move concentrically outward. Numbered "z"-values go from lowest to highest
@@ -121,16 +137,13 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
     # crucible position
     z_bottom_crucible = -3.0
 
-    salt_mass = 190  # g
-    salt_v = salt_mass / breeder_material.density  # salt volume measured by Weiyue
+    salt_mass = 190  # g salt mass measured by Weiyue
+    salt_v = salt_mass / clif.density  # use the volume of ClLiF for all breeders
     salt_h = (salt_v / np.pi - (cru_h - cru_socket_h) * cru_ri**2) / (
         cru_ri**2 - (cru_socket_ri + cru_t) ** 2
     )
+    print(f"Breeder volume: {salt_v:.2e} cm3")
     salt_h += cru_h - cru_socket_h  # salt height in the crucible
-
-    # salt_h = salt_v / (np.pi*cru_ri**2)
-
-    # %%
 
     # GEOMETY
 
@@ -265,11 +278,37 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
             cell_999,
         ],
     )
+    # plot geometry with materials
+    mat_to_colour = {
+        breeder_material: (30, 12, 245),
+        ss316: (74, 73, 108),
+        inconel625: (181, 38, 24),
+        air: (190, 253, 254),
+        sparge: (188, 252, 143),
+        insulator: (254, 255, 145),
+    }
+    universe.plot(
+        origin=(0,12.7,2),
+        width=(37, 16),
+        pixels=int(7e5),
+        basis='yz',
+        color_by='material',
+        colors=mat_to_colour,
+        outline=True,
+        legend=True,
+        legend_kwargs={"fontsize": 16, "framealpha": 1}
+        )
+    # replace labels in legend
+    for text in plt.gca().get_legend().get_texts():
+        pretty_label = name_to_pretty[text.get_text()]
+        text.set_text(pretty_label)
 
+    plt.tight_layout()
+    for ext in ["png", "svg", "pdf"]:
+        plt.savefig(f"geometry_{breeder_material.name}.{ext}")
     geometry = openmc.Geometry(universe)
     geometry.merge_surfaces = True
 
-    # %%
     # TALLIES
 
     # cell filters
@@ -291,7 +330,6 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
 
     tallies = openmc.Tallies([tally1, tally2])
 
-    # %%
     # SETTINGS
 
     # source definition
@@ -317,14 +355,10 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
     settings.particles = int(particles)
     settings.output = {"tallies": False}
 
-    # %%
-    # run
-
     model = openmc.Model(
         materials=materials, geometry=geometry, settings=settings, tallies=tallies
     )
     return model
-
 
 def main(batches: int = 100, particles: int = int(1e7)):
     """Main function running the openmc model for four different breeders
@@ -343,4 +377,4 @@ def main(batches: int = 100, particles: int = int(1e7)):
 
 
 if __name__ == "__main__":
-    main(batches=100, particles=int(1e7))
+    main(batches=100, particles=int(1e6))
