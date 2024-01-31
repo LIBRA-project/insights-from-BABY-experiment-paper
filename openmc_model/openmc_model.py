@@ -6,6 +6,8 @@ import openmc_data_downloader as odd
 import matplotlib.pyplot as plt
 from clif_density import get_cllif_density
 
+plt.rc('font', size=16) 
+
 #   MATERIALS
 
 # PbLi - natural - pure
@@ -82,6 +84,17 @@ sparge.add_element("H", 0.03, "wo")
 sparge.add_element("He", 0.97, "wo")
 sparge.set_density("g/cm3", 0.0001589)
 
+name_to_pretty = {
+    clif.name: "CLiF",
+    flinak.name: "FLiNaK",
+    flibe.name: "FLiBe",
+    pbli.name: "PbLi",
+    ss316.name: "SS316",
+    inconel625.name: "Inconel625",
+    air.name: "Air",
+    sparge.name: "Sparge gas",
+    insulator.name: "Insulator",
+}
 
 def make_model(breeder_material: openmc.Material, batches: int, particles: int):
     """Returns an openmc model for the BABY experiment with one type of breeder material
@@ -266,7 +279,7 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
         ],
     )
     # plot geometry with materials
-    mc = {
+    mat_to_colour = {
         breeder_material: (30, 12, 245),
         ss316: (74, 73, 108),
         inconel625: (181, 38, 24),
@@ -275,15 +288,21 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
         insulator: (254, 255, 145),
     }
     universe.plot(
-        origin=(0,12.7,0),
-        width=(40, 25),
-        pixels=int(5e5),
+        origin=(0,12.7,2),
+        width=(37, 16),
+        pixels=int(7e5),
         basis='yz',
         color_by='material',
-        colors=mc,
+        colors=mat_to_colour,
         outline=True,
         legend=True,
+        legend_kwargs={"fontsize": 16, "framealpha": 1}
         )
+    # replace labels in legend
+    for text in plt.gca().get_legend().get_texts():
+        pretty_label = name_to_pretty[text.get_text()]
+        text.set_text(pretty_label)
+
     plt.tight_layout()
     for ext in ["png", "svg", "pdf"]:
         plt.savefig(f"geometry_{breeder_material.name}.{ext}")
@@ -351,10 +370,10 @@ def main(batches: int = 100, particles: int = int(1e7)):
     for breeder_material in [pbli, flibe, clif, flinak]:
         model = make_model(breeder_material, batches=batches,
                            particles=particles)
-        model.run(
-            threads=16,
-            cwd=breeder_material.name,
-        )
+        # model.run(
+        #     threads=16,
+        #     cwd=breeder_material.name,
+        # )
 
 
 if __name__ == "__main__":
