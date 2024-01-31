@@ -120,13 +120,11 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
     z_bottom_crucible = -3.0
 
     salt_mass = 190  # g salt mass measured by Weiyue
-    salt_v = salt_mass / breeder_material.density
+    salt_v = salt_mass / clif.density  # use the volume of ClLiF for all breeders
     salt_h = (salt_v / np.pi - (cru_h - cru_socket_h) * cru_ri**2) / (
         cru_ri**2 - (cru_socket_ri + cru_t) ** 2
     )
     salt_h += cru_h - cru_socket_h  # salt height in the crucible
-
-    # salt_h = salt_v / (np.pi*cru_ri**2)
 
     # GEOMETY
 
