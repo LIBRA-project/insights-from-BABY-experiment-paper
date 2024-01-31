@@ -259,6 +259,7 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
             cell_999,
         ],
     )
+    # plot geometry with materials
     mc = {
         breeder_material: (30, 12, 245),
         ss316: (74, 73, 108),
@@ -267,7 +268,6 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
         sparge: (188, 252, 143),
         insulator: (254, 255, 145),
     }
-    # fig, ax = plt.subplots()
     universe.plot(
         origin=(0,12.7,0),
         width=(40, 25),
@@ -279,7 +279,8 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
         legend=True,
         )
     plt.tight_layout()
-    plt.savefig(f"geometry_{breeder_material.name}.png")
+    for ext in ["png", "svg", "pdf"]:
+        plt.savefig(f"geometry_{breeder_material.name}.{ext}")
     geometry = openmc.Geometry(universe)
     geometry.merge_surfaces = True
 
