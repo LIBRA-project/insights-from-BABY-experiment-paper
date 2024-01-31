@@ -28,7 +28,7 @@ clif.add_element("Cl", 0.5 * 0.695, "ao")
 
 temperature = 700 #degC
 clif_density = get_cllif_density(temperature, LiCl_frac=0.695, cl37_enr=0.2424)
-print(f"ClLiF density at {temperature} degC: {clif_density} g/cc")
+print(f"ClLiF density at {temperature} degC: {clif_density:.2e} g/cc")
 clif.set_density("g/cm3", clif_density)
 
 # FLiNaK - natural - pure
@@ -129,6 +129,7 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
     salt_h = (salt_v / np.pi - (cru_h - cru_socket_h) * cru_ri**2) / (
         cru_ri**2 - (cru_socket_ri + cru_t) ** 2
     )
+    print(f"Breeder volume: {salt_v:.2e} cm3")
     salt_h += cru_h - cru_socket_h  # salt height in the crucible
 
     # GEOMETY
