@@ -4,6 +4,7 @@ from mvng_source import mvng_source_diamonds
 # needed to download cross sections on the fly
 import openmc_data_downloader as odd
 import matplotlib.pyplot as plt
+from clif_density import get_cllif_density
 
 #   MATERIALS
 
@@ -24,7 +25,11 @@ clif = openmc.Material(name="clif")
 clif.add_element("F", 0.5 * 0.305, "ao")
 clif.add_element("Li", 0.5 * 0.305 + 0.5 * 0.695, "ao")
 clif.add_element("Cl", 0.5 * 0.695, "ao")
-clif.set_density("g/cm3", 1.536)
+
+temperature = 700 #degC
+clif_density = get_cllif_density(temperature, LiCl_frac=0.695, cl37_enr=0.2424)
+print(f"ClLiF density at {temperature} degC: {clif_density} g/cc")
+clif.set_density("g/cm3", clif_density)
 
 # FLiNaK - natural - pure
 flinak = openmc.Material(name="flinak")
@@ -352,4 +357,4 @@ def main(batches: int = 100, particles: int = int(1e7)):
 
 
 if __name__ == "__main__":
-    main(batches=100, particles=int(1e7))
+    main(batches=100, particles=int(1e6))
