@@ -85,7 +85,7 @@ sparge.add_element("He", 0.97, "wo")
 sparge.set_density("g/cm3", 0.0001589)
 
 name_to_pretty = {
-    clif.name: "CLiF",
+    clif.name: "ClLiF",
     flinak.name: "FLiNaK",
     flibe.name: "FLiBe",
     pbli.name: "PbLi",
