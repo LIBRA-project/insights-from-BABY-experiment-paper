@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
-from helpers import main, get_avg_neutron_rate
+from process_data import main, get_avg_neutron_rate
 
 
 # Define the directory where your CSV files are located
