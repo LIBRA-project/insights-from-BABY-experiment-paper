@@ -6,9 +6,12 @@ from process_data import main, get_avg_neutron_rate
 
 # Define the directory where your CSV files are located
 data_runs = {}
-for run, directory in zip([5], ["run_5"]):
+for run in [5]:
     res = main(
-        directory=directory, bin_time=1000, energy_peak_min=1180, energy_peak_max=1300
+        directory=f"run_{run}",
+        bin_time=1000,
+        energy_peak_min=1180,
+        energy_peak_max=1300,
     )
     data_runs[run] = res
 
