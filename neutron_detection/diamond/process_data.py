@@ -81,67 +81,30 @@ def main(directory: str, bin_time: int, energy_peak_min: float, energy_peak_max:
     return res
 
 
-def get_avg_neutron_rate(
-    time_values: np.ndarray, peak_time_values: np.ndarray, window: list
-):
+def get_avg_neutron_rate(time_values, t_min, t_max):
     """Calculate the average neutron rate for a given time window.
 
     Args:
-        time_values (np.ndarray): The time values.
-        peak_time_values (np.ndarray): The time values for the (n,alpha) peak.
-        window (list): The time window for the average neutron rate.
+        time_values (np.ndarray): time values (s) of the considered counts
+        t_min (float): lower bound (s) of the window
+        t_max (float): upper bound (s) of the window
 
     Returns:
         dict: A dictionary containing the average neutron rate for the time window.
     """
     section_data = {}
+
     # Create mask to only count pulses of any energy in section time window
-
-    tot_time_mask = np.logical_and(
-        time_values > window[0],
-        time_values < window[1],
+    idx = np.logical_and(
+        time_values > t_min,
+        time_values < t_max,
     )
 
-    # Create mask to only count pulses from (n,alpha) peak in section time window
-    peak_time_mask = np.logical_and(
-        peak_time_values > window[0],
-        peak_time_values < window[1],
-    )
-
-    section_data["tot counts"] = len(time_values[tot_time_mask])
-    section_data["tot err"] = np.sqrt(len(time_values[tot_time_mask]))
-    window_range = np.diff(window)
-    section_data["tot count rate"] = section_data["tot counts"] / window_range
-    section_data["tot count rate err"] = section_data["tot err"] / window_range
-
-    section_data["peak counts"] = len(peak_time_values[peak_time_mask])
-    section_data["peak err"] = np.sqrt(len(peak_time_values[peak_time_mask]))
-    section_data["peak count rate"] = section_data["peak counts"] / window_range
-    section_data["peak count rate err"] = section_data["peak err"] / window_range
-
-    print("\tSection: {}".format(section_data))
-    print(
-        "\t\tTotal Counts: {} +/- {}".format(
-            section_data["tot counts"], section_data["tot err"]
-        )
-    )
-    print(
-        "\t\tTotal Count Rate: {} +/- {}".format(
-            section_data["tot count rate"],
-            section_data["tot count rate err"],
-        )
-    )
-    print(
-        "\t\tPeak Counts: {} +/- {}".format(
-            section_data["peak counts"], section_data["peak err"]
-        )
-    )
-    print(
-        "\t\tPeak Count Rate: {} +/- {}".format(
-            section_data["peak count rate"],
-            section_data["peak count rate err"],
-        )
-    )
+    section_data["counts"] = len(time_values[idx])
+    section_data["err"] = np.sqrt(len(time_values[idx]))
+    delta_t = t_max - t_min
+    section_data["count rate"] = section_data["counts"] / delta_t
+    section_data["count rate err"] = section_data["err"] / delta_t
     return section_data
 
 

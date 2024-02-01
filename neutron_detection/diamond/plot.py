@@ -20,11 +20,11 @@ data = {
 }
 
 for section_data in data.values():
-    new_dict = get_avg_neutron_rate(
-        res["time_values"], res["peak_time_values"], section_data["window"]
-    )
-    for key, value in new_dict.items():
-        section_data[key] = value
+    new_dict = get_avg_neutron_rate(res["time_values"], *section_data["window"])
+    section_data["total"] = new_dict
+
+    new_dict = get_avg_neutron_rate(res["peak_time_values"], *section_data["window"])
+    section_data["peak"] = new_dict
 
 fig1, ax1 = plt.subplots()
 for run, res in data_runs.items():
@@ -77,7 +77,7 @@ ax3.set_ylabel("Total Count Rate (CPS)")
 ## Plot relevant count rates in regions of interest
 for section_data in data.values():
     ax3.hlines(
-        section_data["tot count rate"][0],
+        section_data["total"]["count rate"],
         section_data["window"][0],
         section_data["window"][1],
         colors="k",
@@ -85,15 +85,15 @@ for section_data in data.values():
     )
     t = ax3.text(
         np.mean(section_data["window"]),
-        section_data["tot count rate"] + 7,
-        "{:.0f} cps".format(section_data["tot count rate"][0]),
+        section_data["total"]["count rate"] + 7,
+        "{:.0f} cps".format(section_data["total"]["count rate"]),
         ha="center",
         c="white",
     )
     t.set_bbox(dict(facecolor="black", alpha=1.0, edgecolor=None))
 
     ax2.hlines(
-        section_data["peak count rate"][0],
+        section_data["peak"]["count rate"],
         section_data["window"][0],
         section_data["window"][1],
         colors="k",
@@ -101,8 +101,8 @@ for section_data in data.values():
     )
     t2 = ax2.text(
         np.mean(section_data["window"]),
-        section_data["peak count rate"] + 0.2,
-        "{:.1f} cps".format(section_data["peak count rate"][0]),
+        section_data["peak"]["count rate"] + 0.2,
+        "{:.1f} cps".format(section_data["peak"]["count rate"]),
         ha="center",
         c="white",
     )
