@@ -21,11 +21,11 @@ jobs:
         environment-file: environment.yml
         activate-environment: baby-paper-env
 
-    - name: Run process_det_data.py
+    - name: Run plot.py
       shell: bash -l {0}
       working-directory: ./neutron_detection/diamond
       run: |
-        python process_det_data.py
+        python plot.py
 
 
   openmc:
