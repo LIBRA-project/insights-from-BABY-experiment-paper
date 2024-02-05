@@ -1,10 +1,13 @@
 import openmc
 import numpy as np
-from mvng_source import mvng_source_diamonds
+from .mvng_source import mvng_source_diamonds
 # needed to download cross sections on the fly
 import openmc_data_downloader as odd
 import matplotlib.pyplot as plt
-from clif_density import get_cllif_density
+
+from src import salt_volume, clif_density
+
+salt_v = salt_volume
 
 plt.rc('font', size=16) 
 
@@ -27,10 +30,6 @@ clif = openmc.Material(name="clif")
 clif.add_element("F", 0.5 * 0.305, "ao")
 clif.add_element("Li", 0.5 * 0.305 + 0.5 * 0.695, "ao")
 clif.add_element("Cl", 0.5 * 0.695, "ao")
-
-temperature = 700 #degC
-clif_density = get_cllif_density(temperature, LiCl_frac=0.695, cl37_enr=0.2424)
-print(f"ClLiF density at {temperature} degC: {clif_density:.2e} g/cc")
 clif.set_density("g/cm3", clif_density)
 
 # FLiNaK - natural - pure
@@ -137,8 +136,8 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
     # crucible position
     z_bottom_crucible = -3.0
 
-    salt_mass = 190  # g salt mass measured by Weiyue
-    salt_v = salt_mass / clif.density  # use the volume of ClLiF for all breeders
+    # salt_mass = 190  # g salt mass measured by Weiyue
+    # salt_v = salt_mass / clif.density  # use the volume of ClLiF for all breeders
     salt_h = (salt_v / np.pi - (cru_h - cru_socket_h) * cru_ri**2) / (
         cru_ri**2 - (cru_socket_ri + cru_t) ** 2
     )

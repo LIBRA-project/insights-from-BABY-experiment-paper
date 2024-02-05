@@ -5,8 +5,11 @@ import numpy as np
 import h5py
 import openmc
 
+from pathlib import Path
+from src import absolute_path
+path = absolute_path('mvng_source_diamonds.h5')
 
-mvng_source = h5py.File('mvng_source_diamonds.h5', 'r')
+mvng_source = h5py.File(path, 'r')
 
 angles = ["0", "15", "30", "45", "60", "75", "90", "105", "120", "135", "150"]
 
