@@ -95,8 +95,8 @@ jobs:
       shell: bash -l {0}
       working-directory: ./tritium
       run: |
-        jupyter-nbconvert --to python baby_run_5.ipynb
-        python baby_run_5.py
+        jupyter-nbconvert --to python baby_run_5.ipynb --output baby_run_5_notebook
+        python baby_run_5_notebook.py
 
     - name: check files exist
       shell: bash -l {0}
