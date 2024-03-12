@@ -76,3 +76,46 @@ jobs:
       run: |
         jupyter-nbconvert --to python postprocessing.ipynb
         python postprocessing.py
+
+  tritium:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    # write a step to setup conda with environment.yml
+    - name: Setup conda
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        environment-file: environment.yml
+        activate-environment: baby-paper-env
+    
+    - name: run openmc
+      shell: bash -l {0}
+      working-directory: ./tritium
+      run: |
+        jupyter-nbconvert --to python baby_run_5.ipynb
+        python baby_run_5.py
+
+    - name: check files exist
+      shell: bash -l {0}
+      working-directory: ./tritium
+      run: |
+        # Array of filenames to check
+        file_names=("baby_run_5/TBR_comparison.pdf" "baby_run_5/sample_activity.pdf")
+
+        # Function to check if a file exists
+        check_file_exists() {
+          if [ ! -e "$1" ]; then
+            echo "Error: File '$1' not found."
+            exit 1
+          fi
+        }
+
+        # Loop over each filename
+        for file in "${file_names[@]}"; do
+          check_file_exists "$file"
+        done
+
+        echo "All files exist."
