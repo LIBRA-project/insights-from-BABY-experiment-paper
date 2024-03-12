@@ -13,3 +13,5 @@ dependencies:
     - nbconvert
     - openmc-plotter
     - pint
+    - matplotlib-label-lines
+    - h-transport-materials
