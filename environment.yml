@@ -7,7 +7,9 @@ dependencies:
   - numpy # add version tag
   - scipy # add version tag
   - matplotlib # add version tag
+  - pip
   - pip:
     - openmc_data_downloader
     - nbconvert
     - openmc-plotter
+    - pint
