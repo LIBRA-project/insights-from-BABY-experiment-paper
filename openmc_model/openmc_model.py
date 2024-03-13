@@ -1,12 +1,13 @@
 import openmc
 import numpy as np
 from mvng_source import mvng_source_diamonds
+
 # needed to download cross sections on the fly
 import openmc_data_downloader as odd
 import matplotlib.pyplot as plt
 from clif_density import get_cllif_density
 
-plt.rc('font', size=16) 
+plt.rc("font", size=16)
 
 #   MATERIALS
 
@@ -28,8 +29,10 @@ clif.add_element("F", 0.5 * 0.305, "ao")
 clif.add_element("Li", 0.5 * 0.305 + 0.5 * 0.695, "ao")
 clif.add_element("Cl", 0.5 * 0.695, "ao")
 
-temperature = 700 #degC
-clif_density = get_cllif_density(temperature, LiCl_frac=0.695, cl37_enr=0.2424)
+temperature = 700  # degC
+salt_mass = 190  # g salt mass measured by Weiyue
+salt_v = 100  # cc measured by Weiyue
+clif_density = salt_mass / salt_v
 print(f"ClLiF density at {temperature} degC: {clif_density:.2e} g/cc")
 clif.set_density("g/cm3", clif_density)
 
@@ -96,6 +99,7 @@ name_to_pretty = {
     insulator.name: "Insulator",
 }
 
+
 def make_model(breeder_material: openmc.Material, batches: int, particles: int):
     """Returns an openmc model for the BABY experiment with one type of breeder material
 
@@ -137,8 +141,6 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
     # crucible position
     z_bottom_crucible = -3.0
 
-    salt_mass = 190  # g salt mass measured by Weiyue
-    salt_v = salt_mass / clif.density  # use the volume of ClLiF for all breeders
     salt_h = (salt_v / np.pi - (cru_h - cru_socket_h) * cru_ri**2) / (
         cru_ri**2 - (cru_socket_ri + cru_t) ** 2
     )
@@ -185,8 +187,7 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
     )  # crucible socket bottom
     # crucible socket bottom + thickness
     pz_18 = openmc.ZPlane(z0=z_bottom_crucible + cru_t + cru_h - cru_socket_h)
-    pz_19 = openmc.ZPlane(z0=z_bottom_crucible + cru_t +
-                          salt_h)  # flibe free surface
+    pz_19 = openmc.ZPlane(z0=z_bottom_crucible + cru_t + salt_h)  # flibe free surface
     pz_20 = openmc.ZPlane(z0=z_bottom_crucible + cru_t + cru_h)  # top cucible
     pz_21 = openmc.ZPlane(
         z0=z_bottom_crucible + cru_t + cru_h + cru_t
@@ -239,29 +240,20 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
     # cells
 
     # neutron generator
-    cell_1 = openmc.Cell(cell_id=1, fill=None,
-                         region=region_1)  # generator void
-    cell_2 = openmc.Cell(cell_id=2, fill=ss316,
-                         region=region_2)  # generator shell
-    cell_30 = openmc.Cell(cell_id=30, fill=None,
-                          region=region_30)  # generator void
-    cell_31 = openmc.Cell(cell_id=31, fill=ss316,
-                          region=region_31)  # generator shell
+    cell_1 = openmc.Cell(cell_id=1, fill=None, region=region_1)  # generator void
+    cell_2 = openmc.Cell(cell_id=2, fill=ss316, region=region_2)  # generator shell
+    cell_30 = openmc.Cell(cell_id=30, fill=None, region=region_30)  # generator void
+    cell_31 = openmc.Cell(cell_id=31, fill=ss316, region=region_31)  # generator shell
     # salt
-    cell_3 = openmc.Cell(cell_id=3, fill=breeder_material,
-                         region=region_3)  # salt
+    cell_3 = openmc.Cell(cell_id=3, fill=breeder_material, region=region_3)  # salt
     # sparge gas in crucible
     cell_4 = openmc.Cell(cell_id=4, fill=sparge, region=region_4)
-    cell_5 = openmc.Cell(cell_id=5, fill=inconel625,
-                         region=region_5)  # crucible shell
+    cell_5 = openmc.Cell(cell_id=5, fill=inconel625, region=region_5)  # crucible shell
 
-    cell_8 = openmc.Cell(cell_id=8, fill=insulator,
-                         region=region_8)  # insulator
-    cell_9 = openmc.Cell(cell_id=9, fill=insulator,
-                         region=region_9)  # insulator
+    cell_8 = openmc.Cell(cell_id=8, fill=insulator, region=region_8)  # insulator
+    cell_9 = openmc.Cell(cell_id=9, fill=insulator, region=region_9)  # insulator
 
-    cell_999 = openmc.Cell(cell_id=999, fill=air,
-                           region=region_999)  # outer sphere
+    cell_999 = openmc.Cell(cell_id=999, fill=air, region=region_999)  # outer sphere
 
     universe = openmc.Universe(
         name="universe",
@@ -288,16 +280,16 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
         insulator: (254, 255, 145),
     }
     universe.plot(
-        origin=(0,12.7,2),
+        origin=(0, 12.7, 2),
         width=(37, 16),
         pixels=int(7e5),
-        basis='yz',
-        color_by='material',
+        basis="yz",
+        color_by="material",
         colors=mat_to_colour,
         outline=True,
         legend=True,
-        legend_kwargs={"fontsize": 16, "framealpha": 1}
-        )
+        legend_kwargs={"fontsize": 16, "framealpha": 1},
+    )
     # replace labels in legend
     for text in plt.gca().get_legend().get_texts():
         pretty_label = name_to_pretty[text.get_text()]
@@ -336,8 +328,7 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
 
     # mvng source characterized via diamond detectors
     source1 = mvng_source_diamonds(center=(0, 0, 0), reference_uvw=(0, 1, 0))
-    source2 = mvng_source_diamonds(
-        center=(0, 24.1, 0), reference_uvw=(0, 1, 0))
+    source2 = mvng_source_diamonds(center=(0, 24.1, 0), reference_uvw=(0, 1, 0))
 
     my_source = []
     for s in source1:
@@ -360,6 +351,7 @@ def make_model(breeder_material: openmc.Material, batches: int, particles: int):
     )
     return model
 
+
 def main(batches: int = 100, particles: int = int(1e7)):
     """Main function running the openmc model for four different breeders
 
@@ -368,8 +360,7 @@ def main(batches: int = 100, particles: int = int(1e7)):
         particles (int, optional): Number of particles per batch. Defaults to int(1e7).
     """
     for breeder_material in [pbli, flibe, clif, flinak]:
-        model = make_model(breeder_material, batches=batches,
-                           particles=particles)
+        model = make_model(breeder_material, batches=batches, particles=particles)
         model.run(
             threads=16,
             cwd=breeder_material.name,
