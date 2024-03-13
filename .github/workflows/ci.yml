@@ -91,11 +91,12 @@ jobs:
         environment-file: environment.yml
         activate-environment: baby-paper-env
     
-    - name: run openmc
+    - name: run model
       shell: bash -l {0}
       working-directory: ./tritium
       run: |
         jupyter-nbconvert --to python baby_run_5.ipynb --output baby_run_5_notebook
+        mkdir baby_run_5
         python baby_run_5_notebook.py
 
     - name: check files exist
