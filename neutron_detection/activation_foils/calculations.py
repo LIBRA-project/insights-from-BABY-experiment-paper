@@ -27,8 +27,6 @@ def get_neutron_flux(experiment: dict):
         * n93_number(experiment["foil_mass"])
         * Nb93_n_2n_Nb92m_cross_section_at_14Mev
     )
-    print(Nb93_n_2n_Nb92m_cross_section_at_14Mev)
-    print(Nb92m_decay_constant)
 
     X = np.exp(-Nb92m_decay_constant * 12 * ureg.h)
     flux *= (1 - (1 - (1 - X) * X) * X) ** -1
