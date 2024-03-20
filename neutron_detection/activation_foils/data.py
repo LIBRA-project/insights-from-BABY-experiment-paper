@@ -8,6 +8,7 @@ foil_data = {
         "photon_counts_uncertainty": 416.398 * ureg.count,
         "time_generator_off": "1/26/2024 21:38:00",
         "start_time_counting": "1/28/2024 10:54:00",
+        "counting_time": 4 * ureg.h,
     },
     "20240128_BABY6_Nb-A_A-325_1638_4hr": {
         "foil_name": "A",
@@ -16,6 +17,7 @@ foil_data = {
         "photon_counts_uncertainty": 408.274 * ureg.count,
         "time_generator_off": "1/26/2024 21:38:00",
         "start_time_counting": "1/28/2024 16:38:00",
+        "counting_time": 4 * ureg.h,
     },
     "20240127_BABY6_Nb-C_P383_1313_4hr": {
         "foil_name": "C",
@@ -24,6 +26,7 @@ foil_data = {
         "photon_counts_uncertainty": 535.974 * ureg.count,
         "time_generator_off": "1/26/2024 21:38:00",
         "start_time_counting": "1/27/2024 13:13:00",
+        "counting_time": 4 * ureg.h,
     },
     "20240127_BABY6_Nb-C_P383_1738_4hr": {
         "foil_name": "C",
@@ -32,5 +35,6 @@ foil_data = {
         "photon_counts_uncertainty": 531.229 * ureg.count,
         "time_generator_off": "1/26/2024 21:38:00",
         "start_time_counting": "1/27/2024 17:38:00",
+        "counting_time": 4 * ureg.h,
     },
 }

@@ -32,10 +32,10 @@ def get_neutron_flux(experiment: dict):
         * ureg.count
         * ureg.particle**-1
     )
-    number_of_Nb92m_measured = experiment["photon_counts"] / (overall_efficiency)
-    flux = number_of_Nb92m_measured / (
+    flux = experiment["photon_counts"] / (overall_efficiency)
+    flux *= (
         n93_number(experiment["foil_mass"]) * Nb93_n_2n_Nb92m_cross_section_at_14Mev
-    )
+    ) ** -1
 
     X = np.exp(-Nb92m_decay_constant * 12 * ureg.h)
     flux *= (1 - (1 - (1 - X) * X) * X) ** -1
@@ -43,7 +43,7 @@ def get_neutron_flux(experiment: dict):
     delta_t = delay_time(
         experiment["time_generator_off"], experiment["start_time_counting"]
     )
-    counting_time = 4 * ureg.h
+    counting_time = experiment["counting_time"]
     flux *= (
         (
             np.exp(-Nb92m_decay_constant * (delta_t + counting_time))
@@ -55,7 +55,7 @@ def get_neutron_flux(experiment: dict):
     return flux.to(ureg["1/(cm^2 hr)"])
 
 
-def get_neutron_flux_generic(experiment: dict):
+def get_neutron_flux_generic(experiment: dict, irradiations: list):
     """
 
     Args:
@@ -64,14 +64,10 @@ def get_neutron_flux_generic(experiment: dict):
     Returns:
         _type_: _description_
     """
-    irradiations = [
-        {"t_on": 0, "t_off": 12 * 3600},
-        {"t_on": 24 * 3600, "t_off": 36 * 3600},
-    ]
     delta_t = delay_time(
         experiment["time_generator_off"], experiment["start_time_counting"]
     )
-    counting_time = 4 * ureg.h
+    counting_time = experiment["counting_time"]
     overall_efficiency = (
         (geometric_efficiency * nal_gamma_efficiency * branching_ratio)
         * ureg.count
@@ -80,6 +76,7 @@ def get_neutron_flux_generic(experiment: dict):
     activity_measured = (
         experiment["photon_counts"] / overall_efficiency
     ) / counting_time
+
     number_of_Nb92m_measured = activity_measured / Nb92m_decay_constant
 
     number_of_Nb92m_after_irradiation = get_number_of_Nb92m(irradiations)
@@ -97,6 +94,7 @@ def get_neutron_flux_generic(experiment: dict):
         sp.Eq(sp.Symbol("N"), number_of_Nb92m_after_counting),
         sp.Symbol("\Gamma_n"),
     )[0]
+
     neutron_flux = (
         neutron_flux.subs(
             sp.Symbol("\lambda"), Nb92m_decay_constant.to(1 / ureg.s).magnitude
@@ -224,10 +222,16 @@ def get_number_ofNb92m_numpy(
 
 
 if __name__ == "__main__":
+    irradiations = [
+        {"t_on": 0, "t_off": 12 * 3600},
+        {"t_on": 24 * 3600, "t_off": 36 * 3600},
+    ]
     for name, data in foil_data.items():
         flux = get_neutron_flux(data)
         print(f"Neutron flux for {name}, foil {data['foil_name']} is {flux:.2e}")
-        flux_analytic = get_neutron_flux_generic(data).to(ureg["1/(cm^2 hr)"])
+        flux_analytic = get_neutron_flux_generic(data, irradiations).to(
+            ureg["1/(cm^2 hr)"]
+        )
         print(
             f"Neutron flux for {name}, foil {data['foil_name']} is {flux_analytic:.2e}"
         )
