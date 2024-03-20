@@ -93,8 +93,12 @@ def get_neutron_flux_generic(experiment: dict):
         t_0=irradiations[-1]["t_off"],
     )
 
-    number_of_Nb92m_after_counting = (
-        number_of_Nb92m_after_counting.subs(
+    neutron_flux = sp.solve(
+        sp.Eq(sp.Symbol("N"), number_of_Nb92m_after_counting),
+        sp.Symbol("\Gamma_n"),
+    )[0]
+    neutron_flux = (
+        neutron_flux.subs(
             sp.Symbol("\lambda"), Nb92m_decay_constant.to(1 / ureg.s).magnitude
         )
         .subs(
@@ -105,14 +109,7 @@ def get_neutron_flux_generic(experiment: dict):
             sp.Symbol("\sigma"),
             Nb93_n_2n_Nb92m_cross_section_at_14Mev.to(ureg.cm**2).magnitude,
         )
-    )
-
-    neutron_flux = sp.solve(
-        sp.Eq(sp.Symbol("N"), number_of_Nb92m_after_counting),
-        sp.Symbol("\Gamma_n"),
-    )[0]
-    neutron_flux = neutron_flux.subs(
-        sp.Symbol("N"), number_of_Nb92m_measured.to(ureg.particle).magnitude
+        .subs(sp.Symbol("N"), number_of_Nb92m_measured.to(ureg.particle).magnitude)
     )
     return neutron_flux * ureg["1/(cm^2 s)"]
 
