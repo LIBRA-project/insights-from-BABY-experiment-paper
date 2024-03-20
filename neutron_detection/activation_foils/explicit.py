@@ -29,14 +29,14 @@ def get_chain(irradiations):
 
 
 def get_neutron_flux(experiment: dict, irradiations: list):
-    """_summary_
+    """calculates the neutron flux during the irradiation
 
     Args:
-        experiment (dict): _description_
-        irradiations (list): _description_
+        experiment (dict): dictionary containing the experiment data
+        irradiations (list): list of dictionaries with keys "t_on" and "t_off" for irradiations
 
     Returns:
-        _type_: _description_
+        pint.Quantity: neutron flux
     """
     counting_time = experiment["counting_time"]
     overall_efficiency = (
@@ -69,6 +69,10 @@ def get_neutron_flux(experiment: dict, irradiations: list):
         )
     ) ** -1
 
+    area_of_sphere = 4 * np.pi * experiment["distance_from_center_of_target_plane"] ** 2
+
+    flux *= area_of_sphere
+
     return flux
 
 
@@ -79,7 +83,5 @@ if __name__ == "__main__":
     ]
     for key, value in foil_data.items():
         print(key)
-        print(
-            f"{get_neutron_flux(value, irradiations).to(ureg.cm**-2 * ureg.h**-1):.2e}"
-        )
+        print(f"{get_neutron_flux(value, irradiations).to(ureg.s**-1):.2e~P}")
         print()
