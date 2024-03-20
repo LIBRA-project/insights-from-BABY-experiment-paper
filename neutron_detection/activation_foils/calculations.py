@@ -72,10 +72,20 @@ def get_neutron_flux_generic(experiment: dict):
         experiment["time_generator_off"], experiment["start_time_counting"]
     )
     counting_time = 4 * ureg.h
+    overall_efficiency = (
+        (geometric_efficiency * nal_gamma_efficiency * branching_ratio)
+        * ureg.count
+        * ureg.particle**-1
+    )
+    activity_measured = (
+        experiment["photon_counts"] / overall_efficiency
+    ) / counting_time
+    number_of_Nb92m_measured = activity_measured / Nb92m_decay_constant
+
     number_of_Nb92m_after_irradiation = get_number_of_Nb92m(irradiations)
 
     number_of_Nb92m_after_counting = N_during_rest(
-        number_of_Nb92m_after_irradiation,
+        N0=number_of_Nb92m_after_irradiation,
         t=irradiations[-1]["t_off"]
         + delta_t.to(ureg.s).magnitude
         + counting_time.to(ureg.s).magnitude,
@@ -83,34 +93,26 @@ def get_neutron_flux_generic(experiment: dict):
         t_0=irradiations[-1]["t_off"],
     )
 
+    number_of_Nb92m_after_counting = (
+        number_of_Nb92m_after_counting.subs(
+            sp.Symbol("\lambda"), Nb92m_decay_constant.to(1 / ureg.s).magnitude
+        )
+        .subs(
+            sp.Symbol("N_{Nb93}"),
+            n93_number(experiment["foil_mass"]).to(ureg.particle).magnitude,
+        )
+        .subs(
+            sp.Symbol("\sigma"),
+            Nb93_n_2n_Nb92m_cross_section_at_14Mev.to(ureg.cm**2).magnitude,
+        )
+    )
+
     neutron_flux = sp.solve(
         sp.Eq(sp.Symbol("N"), number_of_Nb92m_after_counting),
         sp.Symbol("\Gamma_n"),
     )[0]
-
-    # lambdify
-    neutron_flux = sp.lambdify(
-        (
-            sp.Symbol("N"),
-            sp.Symbol("\sigma"),
-            sp.Symbol("\lambda"),
-            sp.Symbol("N_{Nb92m}"),
-        ),
-        neutron_flux,
-    )
-
-    overall_efficiency = (
-        (geometric_efficiency * nal_gamma_efficiency * branching_ratio)
-        * ureg.count
-        * ureg.particle**-1
-    )
-    number_of_Nb92m_measured = experiment["photon_counts"] / overall_efficiency
-
-    neutron_flux = neutron_flux(
-        number_of_Nb92m_measured.to(ureg.particle).magnitude,
-        Nb93_n_2n_Nb92m_cross_section_at_14Mev.to(ureg.cm**2).magnitude,
-        Nb92m_decay_constant.to(1 / ureg.s).magnitude,
-        n93_number(experiment["foil_mass"]).to(ureg.particle).magnitude,
+    neutron_flux = neutron_flux.subs(
+        sp.Symbol("N"), number_of_Nb92m_measured.to(ureg.particle).magnitude
     )
     return neutron_flux * ureg["1/(cm^2 s)"]
 
@@ -140,7 +142,7 @@ def get_number_of_Nb92m(irradiations: list):
     """
 
     neutron_flux = sp.Symbol("\Gamma_n")
-    number_of_Nb92m = sp.Symbol(r"N_{Nb92m}")
+    number_of_Nb93 = sp.Symbol(r"N_{Nb93}")
     decay_constant = sp.Symbol("\lambda")
     cross_section = sp.Symbol("\sigma")
 
@@ -148,19 +150,19 @@ def get_number_of_Nb92m(irradiations: list):
     t_on = irradiations[0]["t_on"]
     t_off = irradiations[0]["t_off"]
     N_after_irradiation = N_during_irradiation(
-        0, t_off, decay_constant, neutron_flux, cross_section, number_of_Nb92m, t_on
+        0, t_off, decay_constant, neutron_flux, cross_section, number_of_Nb93, t_on
     )
     for irr in irradiations[1:]:
         N_at_end_of_rest = N_during_rest(
             N_after_irradiation, irr["t_on"], decay_constant, t_0=t_off
         )
         N_after_irradiation = N_during_irradiation(
-            N_at_end_of_rest,
-            irr["t_off"],
-            decay_constant,
-            neutron_flux,
-            cross_section,
-            number_of_Nb92m,
+            N0=N_at_end_of_rest,
+            t=irr["t_off"],
+            decay_constant=decay_constant,
+            neutron_flux=neutron_flux,
+            cross_section=cross_section,
+            nb_Nb93=number_of_Nb93,
             t_0=irr["t_on"],
         )
         t_off = irr["t_off"]
@@ -254,7 +256,7 @@ if __name__ == "__main__":
         {"t_on": 24 * 3600, "t_off": 36 * 3600},
     ]
     times = np.linspace(0, 36 * 3600, 1000)
-    neutron_flux = 3.5e9 * ureg["1/(cm^2 h)"]  # 1/(cm^2 h)
+    neutron_flux = 3.51e9 * ureg["1/(cm^2 h)"]  # 1/(cm^2 h)
     nb_Nb93 = 1.78e21
     N = get_number_ofNb92m_numpy(
         irradiations, times, neutron_flux.to(ureg["1/(cm^2 s)"]).magnitude, nb_Nb93
@@ -268,7 +270,7 @@ if __name__ == "__main__":
         )
         .subs(sp.Symbol("\lambda"), Nb92m_decay_constant.to(1 / ureg.s).magnitude)
         .subs(sp.Symbol("\Gamma_n"), neutron_flux.to(ureg["1/(cm^2 s)"]).magnitude)
-        .subs(sp.Symbol("N_{Nb92m}"), nb_Nb93)
+        .subs(sp.Symbol("N_{Nb93}"), nb_Nb93)
         .subs(sp.Symbol("t_on1"), 0)
         .subs(sp.Symbol("t_off1"), 12 * 3600)
         .subs(sp.Symbol("t_on2"), 24 * 3600)
