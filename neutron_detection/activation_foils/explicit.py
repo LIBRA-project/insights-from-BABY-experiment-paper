@@ -38,7 +38,6 @@ def get_neutron_flux(experiment: dict, irradiations: list):
     Returns:
         pint.Quantity: neutron flux
     """
-    counting_time = experiment["counting_time"]
     overall_efficiency = (
         (geometric_efficiency * nal_gamma_efficiency * branching_ratio)
         * ureg.count
@@ -61,7 +60,10 @@ def get_neutron_flux(experiment: dict, irradiations: list):
         * (
             np.exp(
                 -Nb92m_decay_constant
-                * (time_between_generator_off_and_start_of_counting + counting_time)
+                * (
+                    time_between_generator_off_and_start_of_counting
+                    + experiment["counting_time"]
+                )
             )
             - np.exp(
                 -Nb92m_decay_constant * time_between_generator_off_and_start_of_counting
@@ -69,6 +71,7 @@ def get_neutron_flux(experiment: dict, irradiations: list):
         )
     ) ** -1
 
+    # convert n/cm2/s to n/s
     area_of_sphere = 4 * np.pi * experiment["distance_from_center_of_target_plane"] ** 2
 
     flux *= area_of_sphere
