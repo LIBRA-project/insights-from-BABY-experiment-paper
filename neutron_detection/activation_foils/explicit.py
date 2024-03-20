@@ -79,12 +79,30 @@ def get_neutron_flux(experiment: dict, irradiations: list):
     return flux
 
 
+def get_neutron_flux_error(experiment: dict):
+    """
+    Returns the uncertainty of the neutron flux as a pint.Quantity
+
+    Args:
+        experiment (dict): dictionary containing the experiment data
+        irradiations (list): list of dictionaries with keys "t_on" and "t_off" for irradiations
+
+    Returns:
+        pint.Quantity: uncertainty of the neutron flux
+    """
+    error_counts = experiment["photon_counts_uncertainty"] / experiment["photon_counts"]
+    error_mass = 0.0001 * ureg.g / experiment["foil_mass"]
+    error_geometric_eff = 0.025 / geometric_efficiency
+    error_intrinsic_eff = 0.025 / nal_gamma_efficiency
+
+    error = np.sqrt(
+        error_counts**2
+        + error_mass**2
+        + error_geometric_eff**2
+        + error_intrinsic_eff**2
+    )
+    return error.to(ureg.dimensionless).magnitude
+
+
 if __name__ == "__main__":
-    irradiations = [
-        {"t_on": 0, "t_off": 12 * ureg.h},
-        {"t_on": 24 * ureg.h, "t_off": 36 * ureg.h},
-    ]
-    for key, value in foil_data.items():
-        print(key)
-        print(f"{get_neutron_flux(value, irradiations).to(ureg.s**-1):.2e~P}")
-        print()
+    pass
