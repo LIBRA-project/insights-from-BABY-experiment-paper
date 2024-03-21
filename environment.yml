@@ -9,6 +9,7 @@ dependencies:
   - matplotlib # add version tag
   - sympy
   - pandas
+  - pint_pandas
   - pip
   - pip:
     - openmc_data_downloader
