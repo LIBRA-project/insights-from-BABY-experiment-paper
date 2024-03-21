@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  diamond_detector:
+  neutron_detetion:
 
     runs-on: ubuntu-latest
 
@@ -27,6 +27,12 @@ jobs:
       run: |
         python plot.py
 
+    - name: Run plot.py
+      shell: bash -l {0}
+      working-directory: ./neutron_detection/activation_foils
+      run: |
+        jupyter-nbconvert --to python main.ipynb
+        python main.py
 
   openmc:
 
