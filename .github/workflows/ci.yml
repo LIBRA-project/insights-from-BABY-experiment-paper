@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  diamond_detector:
+  neutron_detetion:
 
     runs-on: ubuntu-latest
 
@@ -21,12 +21,18 @@ jobs:
         environment-file: environment.yml
         activate-environment: baby-paper-env
 
-    - name: Run plot.py
+    - name: Neutron detector analysis
       shell: bash -l {0}
       working-directory: ./neutron_detection/diamond
       run: |
         python plot.py
 
+    - name: Activation_foil analysis
+      shell: bash -l {0}
+      working-directory: ./neutron_detection/activation_foils
+      run: |
+        jupyter-nbconvert --to python main.ipynb
+        python main.py
 
   openmc:
 
