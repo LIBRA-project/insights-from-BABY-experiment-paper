@@ -10,3 +10,6 @@ Activate the environment:
 ```
 conda activate baby-paper-env
 ```
+<p align="center">
+  <img src="figures/experiment%20principle.svg" style="background-color:white">
+</p>
