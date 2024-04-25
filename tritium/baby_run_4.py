@@ -78,7 +78,7 @@ cumulative_release = cumulative_activity(measurements_after_background_sub)
 
 baby_diameter = 1.77 * ureg.inches - 2 * 0.06 * ureg.inches  # from CAD drawings
 baby_radius = 0.5 * baby_diameter
-baby_volume = 0.125 * ureg.L
+baby_volume = 0.100 * ureg.L
 baby_cross_section = np.pi * baby_radius**2
 baby_height = baby_volume / baby_cross_section
 baby_model = Model(

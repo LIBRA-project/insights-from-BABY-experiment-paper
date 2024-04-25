@@ -44,6 +44,9 @@ def get_neutron_flux(experiment: dict, irradiations: list):
         / ureg.particle
     )
     number_of_Nb92m_decays_measured = experiment["photon_counts"] / overall_efficiency
+
+    number_of_Nb92m_decays_measured *= 0.5  # times by 0.5 because of double counting
+
     flux = (
         number_of_Nb92m_decays_measured
         / n93_number(experiment["foil_mass"])
