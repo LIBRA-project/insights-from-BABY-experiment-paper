@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<geometry>
+  <cell fill="1" id="9999" region="9995 -9993 9994 -9992 9999 -9998" universe="2" />
+  <dagmc_universe filename="dagmc.h5m" id="1" />
+  <surface boundary="vacuum" coeffs="29.1" id="9992" type="y-plane" />
+  <surface boundary="vacuum" coeffs="13.5" id="9993" type="x-plane" />
+  <surface boundary="vacuum" coeffs="-5.0" id="9994" type="y-plane" />
+  <surface boundary="vacuum" coeffs="-36.5" id="9995" type="x-plane" />
+  <surface boundary="vacuum" coeffs="9.47" id="9998" type="z-plane" />
+  <surface boundary="vacuum" coeffs="-5.000000000000002" id="9999" type="z-plane" />
+</geometry>
