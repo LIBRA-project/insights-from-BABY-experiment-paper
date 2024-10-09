@@ -1,6 +1,12 @@
 # BABY-paper
 
-To run the scripts in this repo, first create a [Conda](https://conda.io/projects/conda/en/latest/user-guide/getting-started.html) environment with:
+This repository contains the data and scripts to reproduce the results presented in the _"Advancing Tritium Self-Sufficiency in Fusion Power Plants: Insights from the BABY
+Experiment"_ paper.
+
+You can run the scripts in your browser by clicking on this badge: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/LIBRA-project/insights-from-BABY-experiment-paper/HEAD)
+
+
+To run the scripts locally, first clone this repository then create a [Conda](https://conda.io/projects/conda/en/latest/user-guide/getting-started.html) environment with:
 
 ```
 conda env create -f environment.yml
